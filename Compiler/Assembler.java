@@ -1,5 +1,3 @@
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,20 +24,12 @@ public class Assembler { // todo: make it work if you flip the order of A and M
     public static Scanner sc = new Scanner(System.in);
     
 
-    public static void main(String[] args) throws Exception {
+    public static String assemble(String input) throws Exception {
 
-        FileWriter fileWriter = new FileWriter("assembled.hack");
+        String[] inputLines = input.split("\n"); // splits the input string into lines
 
-        System.out.println("what file would you like to assemble? (leave the line blank to use pong/Pong.asm)");
-        String inputFile = sc.nextLine();
-        if (inputFile.length() == 0) {
-            inputFile = "pong/Pong.asm";
-        }
-        
-        fileReader = new Scanner(new File(inputFile));
-
-        while (fileReader.hasNextLine()) {
-            Instruction nextInstruction = Parser.parseLine(fileReader.nextLine()); // gets the next parsed line as an Instruction object - could be A, C, or Label
+        for (String line : inputLines) {
+            Instruction nextInstruction = Parser.parseLine(line); // gets the next parsed line as an Instruction object - could be A, C, or Label
 
             if (nextInstruction == null) { // if the line was empty or a comment
                 continue;
@@ -77,11 +67,7 @@ public class Assembler { // todo: make it work if you flip the order of A and M
             instructionsBinary.add(instruction.toBinary()); // convert the a or c instruction to binary and add it to the binary instructions list
         }
 
-        for (String binaryInstruction : instructionsBinary) { // print the instructions to the file
-            fileWriter.write(binaryInstruction + "\n");
-        }
-
-        fileWriter.close();
+        return String.join("\n", instructionsBinary); // return the binary instructions as the full file
     }
 }
 

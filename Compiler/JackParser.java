@@ -15,8 +15,11 @@ public class JackParser {
 
     public static ArrayList<String> tokens = new ArrayList<String>(); // all tokens in file currently being parsed, static var for the same reason
 
-    public static JackTree parseJack(String filename) throws Exception { // parse a jack file
+    public static String parse(String filename) throws Exception { // parse a jack file
+        return treeToXML(parseToTree(filename), 0); // convert the tree to an xml string and return it
+    }
 
+    public static JackTree parseToTree(String filename) throws Exception {
         JackTree fullTree;
         fileStrings = new ArrayList<String>(); // initialize to empty array
 
@@ -57,8 +60,6 @@ public class JackParser {
         } else {
             fullTree = parseClass(tokens);
         }
-
-        XMLWriter.writeToFile(filename, fullTree);
 
         return fullTree;
     }
@@ -334,5 +335,24 @@ public class JackParser {
         arr.add(new JackTree(tokenType, tokenValue));
         tokens.remove(0);
         return arr;
+    }
+
+    public static String treeToXML(JackTree tree, int indentLevel) { // converts the jacktree to an xml string recursively
+        String xml = "";
+        String indent = "";
+        for (int i = 0; i < indentLevel; i++) {
+            indent += "  ";
+        }
+
+        if (tree.isToken) { // if its a token, add the token type with value
+            xml += indent + "<" + tree.tokenType + "> " + tree.tokenValue.replace("<", "&lt;").replace(">", "&gt;") + " </" + tree.tokenType + ">\n";
+        } else { // if enclosing more xml, sandwich the children with the opening and closing tags
+            xml += indent + "<" + tree.tokenType + ">\n";
+            for (JackTree child : tree.children) {
+                xml += treeToXML(child, indentLevel + 1);
+            }
+            xml += indent + "</" + tree.tokenType + ">\n";
+        }
+        return xml;
     }
 }

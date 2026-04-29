@@ -20,11 +20,11 @@ public class JackCompiler {
         sc.nextLine();
 
         System.out.println("");
-        System.out.println("what file type is your input? \u001B[38;2;140;140;140m(enter the number)\u001B[0m");
-        System.out.println("  \u001B[38;2;140;140;140m1.\u001B[0m .jack");
-        System.out.println("  \u001B[38;2;140;140;140m2.\u001B[0m .xml");
-        System.out.println("  \u001B[38;2;140;140;140m3.\u001B[0m .vm");
-        System.out.println("  \u001B[38;2;140;140;140m4.\u001B[0m .asm");
+        System.out.println("what would you like to output? \u001B[38;2;140;140;140m(enter the number)\u001B[0m");
+        System.out.println("  \u001B[38;2;140;140;140m1.\u001B[0m .hack");
+        if (inputType > 1) System.out.println("  \u001B[38;2;140;140;140m2.\u001B[0m .asm");
+        if (inputType > 2) System.out.println("  \u001B[38;2;140;140;140m3.\u001B[0m .vm");
+        if (inputType > 3) System.out.println("  \u001B[38;2;140;140;140m4.\u001B[0m .xml");
         
         int outputType = sc.nextInt();
         sc.nextLine();
@@ -80,33 +80,4 @@ public class JackCompiler {
         return false;
     }
 
-}
-
-class XMLWriter {
-
-    public static void writeToFile(String filename, JackTree tree) throws Exception {
-        FileWriter fileWriter = new FileWriter(filename.replace(".jack", "Ans.xml")); // output file with same name (+ Ans so it's different from the file w the right answer) but .xml extension in same directory
-        
-        fileWriter.write(treeToXML(tree, 0)); // write the xml string to the file
-        fileWriter.close();
-    }
-
-    public static String treeToXML(JackTree tree, int indentLevel) { // converts the jacktree to an xml string recursively
-        String xml = "";
-        String indent = "";
-        for (int i = 0; i < indentLevel; i++) {
-            indent += "  ";
-        }
-
-        if (tree.isToken) { // if its a token, add the token type with value
-            xml += indent + "<" + tree.tokenType + "> " + tree.tokenValue.replace("<", "&lt;").replace(">", "&gt;") + " </" + tree.tokenType + ">\n";
-        } else { // if enclosing more xml, sandwich the children with the opening and closing tags
-            xml += indent + "<" + tree.tokenType + ">\n";
-            for (JackTree child : tree.children) {
-                xml += treeToXML(child, indentLevel + 1);
-            }
-            xml += indent + "</" + tree.tokenType + ">\n";
-        }
-        return xml;
-    }
 }
