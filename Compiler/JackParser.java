@@ -19,17 +19,11 @@ public class JackParser {
         return treeToXML(parseToTree(filename), 0); // convert the tree to an xml string and return it
     }
 
-    public static JackTree parseToTree(String filename) throws Exception {
+    public static JackTree parseToTree(String fullFile) throws Exception {
         JackTree fullTree;
         fileStrings = new ArrayList<String>(); // initialize to empty array
 
         String symbolsString = String.join("", symbols).replace("[", "\\[").replace("]", "\\]").replace("-", "\\-"); // string of all symbols for the regex expressions
-
-        // read whole file into a string
-        Scanner fileScanner = new Scanner(new File(filename));
-        fileScanner.useDelimiter("\\A");
-        String fullFile = fileScanner.hasNext() ? fileScanner.next() : "";
-        fileScanner.close();
 
         // find all strings in the file, put them in an array, and replace them in the token list with a placeholder corresponding to the string in the array
         Matcher stringMatcher = Pattern.compile("\"[^\"]*\"").matcher(fullFile);

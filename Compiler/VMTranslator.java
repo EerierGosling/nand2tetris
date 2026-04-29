@@ -1,7 +1,4 @@
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Scanner;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class VMTranslator { // todo: doesn't work if comment has no content
@@ -23,53 +20,30 @@ public class VMTranslator { // todo: doesn't work if comment has no content
     public static Scanner sc = new Scanner(System.in);
 
 
-    public static void translateFile(String inputFile) throws Exception { // translates a single file or directory
+    public static String translateFile(String input, boolean isDirectory) throws Exception { // translates a single file or directory
 
-        File input = new File(inputFile);
-        FileWriter fileWriter;
-        ArrayList<File> vmFiles = new ArrayList<File>();
-        boolean needsBootstrap = false;
+        String output;
 
-        if (input.isDirectory()) {
-            // translate all .vm files in directory
-            needsBootstrap = true;
-            File[] files = input.listFiles();
-            for (File file : files) {
-                if (file.getName().endsWith(".vm")) {
-                    vmFiles.add(file);
-                }
-            }
-            // output file is directory name + .asm
-            String dirName = input.getName();
-            fileWriter = new FileWriter(new File(input, dirName + ".asm"));
-        } else { // translate single file
-            vmFiles.add(input);
-            fileWriter = new FileWriter(inputFile.replace(".vm", ".asm"));
-        }
 
-        if (needsBootstrap) { // only need bootstrap code if there are multiple files, otherwise the single file just needs RETURN_INTERNAL routine if it has any returns
-            fileWriter.write(Bootstrapping.fullBootstrap + "\n");
+        if (isDirectory) { // only need bootstrap code if there are multiple files, otherwise the single file just needs RETURN_INTERNAL routine if it has any returns
+            output = Bootstrapping.fullBootstrap + "\n";
         } else {
-            fileWriter.write(Bootstrapping.returnRoutine + "\n");
+            output = Bootstrapping.returnRoutine + "\n";
         }
 
-        // translate each file
-        for (File vmFile : vmFiles) {
-            currentFileName = vmFile.getName().replace(".vm", "");
-            fileReader = new Scanner(vmFile);
+        String[] inputLines = input.split("\n");
 
-            while (fileReader.hasNextLine()) {
-                Line nextLine = Parser.parseLine(fileReader.nextLine());
+        for (String line : inputLines) {
+            Line nextLine = Parser.parseLine(line);
 
-                if (nextLine == null) {
-                    continue;
-                }
-
-                fileWriter.write(nextLine.toASM() + "\n");
+            if (nextLine == null) {
+                continue;
             }
+
+            output += nextLine.toASM() + "\n";
         }
 
-        fileWriter.close();
+        return output;
     }
 }
 
