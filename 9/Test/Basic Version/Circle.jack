@@ -1,0 +1,48 @@
+class Circle {
+    function void run(int radius) {
+        var int horizontalShift, verticalShift;
+
+        let horizontalShift = 0;
+        let verticalShift = 0;
+
+        do Screen.drawCircle(256, 128, radius);
+
+        while (~(Keyboard.keyPressed() = 81)){
+        
+            if ((Keyboard.keyPressed() = 131) & (((verticalShift - 2) * radius + 128) > 0)) { // up
+                do Screen.setColor(false);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                let verticalShift = verticalShift - 1;
+                do Screen.setColor(true);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                do Sys.wait(100);
+            }
+            if ((Keyboard.keyPressed() = 133) & (((verticalShift + 2) * radius - 128) < 0)) { // down
+                do Screen.setColor(false);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                let verticalShift = verticalShift + 1;
+                do Screen.setColor(true);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                do Sys.wait(100);
+            }
+            if ((Keyboard.keyPressed() = 130) & (((horizontalShift - 2) * radius + 256) > 0)) { // left
+                do Screen.setColor(false);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                let horizontalShift = horizontalShift - 1;
+                do Screen.setColor(true);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                do Sys.wait(100);
+            }
+            if ((Keyboard.keyPressed() = 132) & (((horizontalShift + 2) * radius - 256) < 0)) { // right
+                do Screen.setColor(false);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                let horizontalShift = horizontalShift + 1;
+                do Screen.setColor(true);
+                do Screen.drawCircle(256 + (horizontalShift * radius), 128 + (verticalShift * radius), radius);
+                do Sys.wait(100);
+            }
+        }
+
+        return;
+    }
+}

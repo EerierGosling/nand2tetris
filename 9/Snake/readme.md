@@ -1,0 +1,1 @@
+this is a regular game of snake! the game explains it, but you just use the arrow keys to move the snake around.

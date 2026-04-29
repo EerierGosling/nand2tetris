@@ -1,0 +1,51 @@
+function Main.main 0
+label WHILE_EXP0
+push constant 0
+not
+not
+if-goto WHILE_END0
+call Main.runGame 0
+pop temp 0
+push constant 2000
+call Sys.wait 1
+pop temp 0
+call Functions.waitForKeyPress 0
+pop temp 0
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function Main.runGame 1
+push constant 0
+not
+pop local 0
+call Screen.clearScreen 0
+pop temp 0
+call DrawHelper.startScreen 0
+pop temp 0
+call Functions.waitForKeyPress 0
+pop temp 0
+call Screen.clearScreen 0
+pop temp 0
+call DrawHelper.drawField 0
+pop temp 0
+call Snake.initializeSnake 0
+pop temp 0
+call Apple.initializeApple 0
+pop temp 0
+label WHILE_EXP0
+push local 0
+not
+if-goto WHILE_END0
+push constant 500
+call Sys.wait 1
+pop temp 0
+call Snake.tick 0
+pop local 0
+goto WHILE_EXP0
+label WHILE_END0
+call Snake.getScore 0
+call DrawHelper.gameOver 1
+pop temp 0
+push constant 0
+return

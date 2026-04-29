@@ -1,0 +1,121 @@
+class Snake {
+    static Array snakePosition; // snake position is stored as y*100 + x (0<=x<16, 0<=y<8) in each index to be more memory efficient
+    static int prevDirection;
+
+    function void initializeSnake() {
+        var int i;
+        let i = 0;
+        if (~(snakePosition = null)) {
+            do snakePosition.dispose(); // dispose of old snake array if it exists
+        }
+        let snakePosition = Array.new(128); // max length of snake is 128 (8*16)
+        while (i < 128) {
+            let snakePosition[i] = -1;
+            let i = i + 1;
+        }
+
+        do DrawHelper.drawSnake(3, 3);
+        do DrawHelper.drawSnake(4, 3);
+
+        let snakePosition[0] = 4 + (3*100);
+        let snakePosition[1] = 3 + (3*100);
+
+        let prevDirection = 132; // start moving right
+
+        return;
+    }
+
+    function int getXPos(int index) {
+        return Functions.modulo(snakePosition[index], 100);
+    }
+
+    function int getYPos(int index) {
+        return snakePosition[index]/100;
+    }
+
+    function boolean inSnake(int x, int y) {
+        var int i;
+        let i = 0;
+        while (~(snakePosition[i] = -1)) {
+            if ((Functions.modulo(snakePosition[i], 100) = x) & (snakePosition[i]/100 = y)) {
+                return true;
+            }
+            let i = i + 1;
+        }
+        return false;
+    }
+
+    function int getScore() {
+        var int i;
+        let i = 0;
+        while (~(snakePosition[i] = -1)) {
+            let i = i + 1;
+        }
+        return i - 2; // score is length of snake - 2 (starting length)
+    }
+
+    function boolean tick() {
+        var int newHead, newLoc, prevLoc, prevDirectionNoArrow, i, keyPressed;
+
+        let keyPressed = Keyboard.keyPressed();
+
+        if ((~(keyPressed = 131) & ~(keyPressed = 130) & ~(keyPressed = 132) & ~(keyPressed = 133)) | (Math.abs(prevDirection - keyPressed) = 2)) { // not hitting an arrow
+            let keyPressed = prevDirection; // go with prev direction if not hitting an arrow or if trying to go the opposite direction
+        }
+
+        if (keyPressed = 131) { // up
+            let newHead = snakePosition[0] - 100; // subtract 1 from y
+            if (newHead < 0) { // if off screen, end game
+                return false;
+            }
+            let prevDirection = keyPressed;
+        }
+        if (keyPressed = 133) { // down
+            let newHead = snakePosition[0] + 100; // add 1 to y
+            if (newHead > 799) { // if off screen, end game
+                return false;
+            }
+            let prevDirection = keyPressed;
+        }
+        if (keyPressed = 130) { // left
+            let newHead = snakePosition[0] - 1; // subtract 1 from x
+            if ((newHead/100) < (snakePosition[0]/100)) { // if off screen, end game
+                return false;
+            }
+            let prevDirection = keyPressed;
+        }
+        if (keyPressed = 132) { // right
+            let newHead = snakePosition[0] + 1; // add 1 to x
+            if (Functions.modulo(newHead, 100) > 15) { // if off screen, end game
+                return false;
+            }
+            let prevDirection = keyPressed;
+        }
+
+        // check if snake hits itself - end game if true
+        if (Snake.inSnake(Functions.modulo(newHead, 100), newHead/100)) {
+            return false;
+        }
+
+        let i = 0;
+        let newLoc = newHead;
+
+        while (~(snakePosition[i] = -1)) { // shift snake down in array to make room for new head to be stored at index 0
+            let prevLoc = snakePosition[i];
+            let snakePosition[i] = newLoc;
+            let newLoc = prevLoc;
+            let i = i + 1;
+        }
+
+        if (newHead = Apple.getApplePosition()) { // if snake eats apple, don't clear tail and spawn new apple
+            let snakePosition[i] = newLoc;
+            do Apple.spawn();
+        } else {
+            do DrawHelper.drawGrid(Functions.modulo(newLoc, 100)*32, (newLoc/100)*32); // clear tail by redrawing grid square where tail is
+        }
+
+        do DrawHelper.drawSnake(Functions.modulo(newHead, 100), newHead/100); // draw new head
+
+        return true;
+    }
+}

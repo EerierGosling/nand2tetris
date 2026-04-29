@@ -1,0 +1,39 @@
+class Main {
+
+    function void main() {
+
+        while (true) { // main game loop
+            do Main.runGame();
+            do Sys.wait(2000); // so it doesn't automatically continue bc the user is holding an arrow key
+            do Functions.waitForKeyPress();
+        }
+
+        return;
+    }
+
+    function void runGame() { // run a full game
+        var boolean going;
+        let going = true;
+
+        do Screen.clearScreen();
+
+        do DrawHelper.startScreen();
+
+        do Functions.waitForKeyPress();
+
+        do Screen.clearScreen();
+
+        do DrawHelper.drawField();
+        do Snake.initializeSnake();
+        do Apple.initializeApple();
+
+        while (going) { // each iteration, the snake moves one step
+            do Sys.wait(500);
+            let going = Snake.tick();
+        }
+
+        do DrawHelper.gameOver(Snake.getScore());
+
+        return;
+    }
+}

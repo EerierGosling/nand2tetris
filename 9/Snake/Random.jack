@@ -1,0 +1,21 @@
+class Random {
+    // pseudo-random numbers - lcg algorithm
+    // https://www.geeksforgeeks.org/dsa/linear-congruence-method-for-generating-pseudo-random-numbers/
+
+    field int seed;
+
+    constructor Random new() {
+        let seed = 6573;
+        return this;
+    }
+
+    method int next(int max) {
+        let seed = (seed * 75) + 0; // numbers from https://en.wikipedia.org/wiki/Linear_congruential_generator#Parameters_in_common_use (couldn't use the better ones bc the numbers were too big for jack)
+        // if you want a different game each time, change these numbers! ^^ i can't find a way to do better randomness with no input - i can't even get the time as an input which would be different each time :(
+
+        if (seed < 0) {
+            let seed = -seed;
+        }
+        return Functions.modulo(seed, max);
+    }
+}

@@ -1,0 +1,43 @@
+class Apple {
+    static Array applePosition;
+    static Random random;
+
+    function void initializeApple() {
+        if (~(applePosition = null)) {
+            do applePosition.dispose(); // dispose of old apple position array if it exists
+        }
+        let applePosition = Array.new(2); // initialize position to empty array (size 2, x & y)
+        if (random = null) { // initialize random number generator if it hasn't been initialized yet
+            let random = Random.new();
+        }
+        do Apple.spawn();
+
+        return;
+    }
+
+    function int getApplePosition() { // get position in format of how position is stored for snake
+        return applePosition[0] + (applePosition[1] * 100);
+    }
+
+    function Array getApplePositionArray() {
+        return applePosition;
+    }
+
+    function void spawn() { // spawn apple in random location
+        var int x, y;
+        var boolean inSnake;
+
+        let inSnake = true;
+        
+        while (inSnake) {
+            let x = random.next(16);
+            let y = random.next(8);
+            let applePosition[0] = x;
+            let applePosition[1] = y;
+            let inSnake = Snake.inSnake(x, y); // check if apple is spawned on snake
+        }
+
+        do DrawHelper.drawApple(applePosition[0]*32, applePosition[1]*32, true); // draw nice apple graphic - you can change to false to make it a circle
+        return;
+    }
+}

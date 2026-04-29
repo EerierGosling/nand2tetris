@@ -1,0 +1,156 @@
+class DrawHelper {
+
+    function void drawGraphic(int x, int y, Array graphic, int height, int width, boolean tempGraphic) {
+        // draws a graphic in the format that compile_images.py creates at position (x,y) on the screen
+        // if tempGraphic is true, then the graphic will be disposed of after being drawn to prevent memory leaks
+        // 0 = white
+        // 1 = black
+        // -1 = transparent
+
+        var int i, j;
+        var Array row;
+        let i = 0;
+        let j = 0;
+
+        // loop through each pixel in the graphic and draw it to the screen
+        while (i < height) {
+            let j = 0;
+            let row = graphic[i];
+            while (j < width) {
+                if (row[j] = 0) {
+                    do Screen.setColor(0);
+                    do Screen.drawPixel(x + j, y + i);
+                }
+                if (row[j] = 1) {
+                    do Screen.setColor(1);
+                    do Screen.drawPixel(x + j, y + i);
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+
+        if (tempGraphic) {
+            do Functions.dispose2DArray(graphic, height);
+        }
+        return;
+    }
+
+    function void drawApple(int x, int y, boolean fancyApple) { // draws an apple at position (x,y) - if fancyApple is true, it draws an apple i drew, otherwise it draws a circle
+        if (~fancyApple) {
+            do Screen.drawCircle(x + 16, y + 16, 8);
+        } else {
+            do DrawHelper.drawGraphic(x, y, AppleGraphic.get(), 32, 32, true);
+        }
+        return;
+    }
+
+    function void drawGrid(int x, int y) { // draws the correct grid background tile for the position specified in that location
+        var int i, j;
+
+        let i = 0;
+        let j = 0;
+
+        // if white square, draw a white square
+        if (~(Functions.modulo((x/32) + (y/32), 2) = 0)) {
+            do Screen.setColor(0);
+            do Screen.drawRectangle(x, y, x + 31, y + 31);
+            do Screen.setColor(1);
+            return;
+        }
+
+        // if a grey square, draw a checkerboard pattern
+        while (i < 32) {
+            while (j < 32) {
+                if (Functions.modulo(i+j, 2) = 0) {
+                    do Screen.drawPixel(x + i, y + j);
+                } else {
+                    do Screen.setColor(0);
+                    do Screen.drawPixel(x + i, y + j);
+                    do Screen.setColor(1);
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+            let j = 0;
+        }
+
+        return;
+    }
+
+    function void drawField() { // draw the entire field bg - only draws the ones that are checkerboards to save time
+        var int i,j;
+        let i = 0;
+        while (i < 16) {
+            let j = 0;
+            while (j < 8) {
+                if (Functions.modulo(i+j, 2) = 0) {
+                    do DrawHelper.drawGrid(i*32, j*32);
+                }
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
+        return;
+    }
+
+    function void drawSnake(int x, int y) { // draw snake segment at position (x,y) (black square)
+        var int i, j;
+
+        let i = 0;
+        let j = 0;
+
+        do Screen.drawRectangle(x*32, y*32, (x*32) + 31, (y*32) + 31);
+
+        return;
+    }
+
+    /** function void drawSnakeEyes(int x, int y, int direction) {
+        if (direction = 131) { // up
+            
+        }
+        if (direction = 133) { // down
+            do Screen.setColor(false);
+            do Screen.drawRectangle(x*32 + 6, y*32 + 20, x*32 + 6 + 7, y*32 + 20 + 8);
+            do Screen.setColor(true);
+            do Screen.drawRectangle(x*32 + 6 + 3, y*32 + 20 + 6, x*32 + 6 + 7, y*32 + 20 + 8);
+            do Screen.drawPixel(x*32 + 6, y*32 + 20);
+            do Screen.drawPixel(x*32 + 6 + 4, y*32 + 20 + 5);
+            do Screen.drawPixel(x*32 + 6 + 5, y*32 + 20 + 5);
+        }
+        if (direction = 130) { // left
+            
+        }
+        if (direction = 132) { // right
+            
+        }
+
+        return;
+    } */
+
+
+    function void startScreen() { // writes start screen
+        do Screen.clearScreen();
+
+        do Output.moveCursor(6, 21);
+        do Output.printString("Welcome to Snake!");
+        do Output.moveCursor(8, 17);
+        do Output.printString("Use the arrow keys to move.");
+        do Output.moveCursor(10, 19);
+        do Output.printString("Press any key to start");
+        return;
+    }
+
+    function void gameOver(int score) { // writes game over screen with score
+        do Screen.clearScreen();
+
+        do Output.moveCursor(6, 26);
+        do Output.printString("Game Over!");
+        do Output.moveCursor(8, 23);
+        do Output.printString("Your score is: ");
+        do Output.printInt(score);
+        do Output.moveCursor(10, 17);
+        do Output.printString("Press any key to play again");
+        return;
+    }
+}

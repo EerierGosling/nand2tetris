@@ -1,0 +1,25 @@
+class Functions { // functions i think jack should have built in but doesn't so i put them here
+    function void dispose2DArray(Array arr, int numRows) { // dispose of a 2D array by rows and then the arr itself
+        var int i;
+        var Array row;
+        let i = 0;
+        while (i < numRows) {
+            let row = arr[i];
+            do row.dispose();
+            let i = i + 1;
+        }
+        do arr.dispose();
+        return;
+    }
+
+    function int modulo(int a, int b) { // a mod b
+        return a - ((a / b) * b);
+    }
+
+    function void waitForKeyPress() { // return once a key is pressed
+        while (~Keyboard.keyPressed()) {
+            do Sys.wait(10);
+        }
+        return;
+    }
+}

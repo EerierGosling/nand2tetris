@@ -1,0 +1,17 @@
+class Main {
+
+    function void main(){
+        var String radiusStr;
+        var int radius;
+
+        let radiusStr = Keyboard.readLine("what radius do you want? ");
+        let radius = radiusStr.intValue();
+
+        do Screen.clearScreen();
+
+        do Circle.run(radius);
+
+        return;
+    }
+
+}

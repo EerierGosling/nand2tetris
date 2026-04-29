@@ -1,0 +1,15 @@
+/**
+ * 16-bit exclusive-or gate:
+ * for i = 0, ..., 15:
+ * if ((a[i] and Not(b[i])) or (Not(a[i]) and b[i])) out[i] = 1, else out[i] = 0
+ */
+CHIP Xor16 {
+    IN a[16], b[16];
+    OUT out[16];
+
+    PARTS:
+    
+    Or16(a=a, b=b, out=AOut);
+    Nand16(a=a, b=b, out=BOut);
+    And16(a=AOut, b=BOut, out=out);
+}
