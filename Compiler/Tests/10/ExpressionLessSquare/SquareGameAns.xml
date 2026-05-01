@@ -4,13 +4,13 @@
   <symbol> { </symbol>
   <classVarDec>
     <keyword> field </keyword>
-    <identifier> Square </identifier>
+    <keyword> var </keyword>
     <identifier> square </identifier>
     <symbol> ; </symbol>
   </classVarDec>
   <classVarDec>
     <keyword> field </keyword>
-    <keyword> int </keyword>
+    <keyword> var </keyword>
     <identifier> direction </identifier>
     <symbol> ; </symbol>
   </classVarDec>
@@ -253,13 +253,13 @@
       <symbol> { </symbol>
       <varDec>
         <keyword> var </keyword>
-        <keyword> char </keyword>
+        <keyword> var </keyword>
         <identifier> key </identifier>
         <symbol> ; </symbol>
       </varDec>
       <varDec>
         <keyword> var </keyword>
-        <keyword> boolean </keyword>
+        <keyword> var </keyword>
         <identifier> exit </identifier>
         <symbol> ; </symbol>
       </varDec>

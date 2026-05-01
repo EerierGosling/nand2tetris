@@ -1,0 +1,108 @@
+import java.io.File;
+import java.util.Scanner;
+import java.util.ArrayList;
+import java.io.FileWriter;
+
+public class Compiler {
+
+    public static Scanner sc = new Scanner(System.in);
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("");
+        System.out.println("what file type is your input? \u001B[38;2;140;140;140m(enter the number)\u001B[0m");
+        System.out.println("  \u001B[38;2;140;140;140m1.\u001B[0m .asm");
+        System.out.println("  \u001B[38;2;140;140;140m2.\u001B[0m .vm");
+        System.out.println("  \u001B[38;2;140;140;140m3.\u001B[0m .jack");
+        
+        int inputNum = sc.nextInt();
+        sc.nextLine();
+
+        System.out.println("");
+        System.out.println("what would you like to output? \u001B[38;2;140;140;140m(enter the number)\u001B[0m");
+        System.out.println("  \u001B[38;2;140;140;140m1.\u001B[0m .hack");
+        if (inputNum > 1) System.out.println("  \u001B[38;2;140;140;140m2.\u001B[0m .asm");
+        if (inputNum > 2) System.out.println("  \u001B[38;2;140;140;140m3.\u001B[0m .vm");
+        if (inputNum > 2) System.out.println("  \u001B[38;2;140;140;140m4.\u001B[0m .xml");
+        
+        int outputNum = sc.nextInt();
+        sc.nextLine();
+
+        FileType.type inputType = FileType.getType(inputNum);
+        FileType.type outputType = FileType.getType(outputNum);
+
+        System.out.println("");
+        System.out.println("what file or directory would you like to compile?");
+        System.out.println("\u001B[38;2;140;140;140m(write 'all' to translate all .jack files in all subdirectories or leave the line blank to use ArrayTest/Main.jack)\u001B[0m"); // \u001B[38;2;140;140;140m is the ansi escape sequence for a shade of grey (140, 140, 140), \u001B[0m resets color to default (found it on stack overflow)
+
+        String inputFile = sc.nextLine();
+
+        if (inputFile.length() == 0) { // use default
+            inputFile = "ArrayTest/Main.jack";
+            JackParser.parseJack(inputFile);
+        } else if (inputFile.equals("all")) { // parse all files
+            ArrayList<String> allFiles = getFiles("./");
+            for (String fileName : allFiles) {
+                JackParser.parseJack(fileName);
+            }
+        } else { // parse user-given file
+            JackParser.parseJack(inputFile);
+        }
+    }
+
+    public static ArrayList<String> getFiles(String folderPath) { // gets all jack files in the directory
+        File folder = new File(folderPath);
+        File[] listOfFiles = folder.listFiles();
+        ArrayList<String> fileNames = new ArrayList<String>();
+
+        String folderPathAppend = folderPath;
+
+        if (folderPath.equals("./")) {
+            folderPathAppend = ".";
+        }
+
+        for (File file : listOfFiles) {
+            if (file.isFile() && file.getName().endsWith(".jack")) {
+                fileNames.add(folderPathAppend + "/" + file.getName());
+            } else if (file.isDirectory()) {
+                ArrayList<String> subfolderFiles = getFiles(folderPathAppend + "/" + file.getName());
+                fileNames.addAll(subfolderFiles);
+            }
+        }
+
+        return fileNames;
+    }
+
+    public static boolean contains(String[] arr, String str) { // check if array contains a string
+        for (String s : arr) {
+            if (s.equals(str)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+}
+
+public class FileType {
+
+    public enum type {
+        HACK, ASM, VM, XML, JACK
+    }
+
+    public static type getType(int num) {
+        switch (num) {
+            case 1:
+                return type.HACK;
+            case 2:
+                return type.ASM;
+            case 3:
+                return type.VM;
+            case 4:
+                return type.XML;
+            case 5:
+                return type.JACK;
+            default:
+                throw new IllegalArgumentException("invalid type number: " + num);
+        }
+    }
+}

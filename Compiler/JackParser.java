@@ -1,5 +1,3 @@
-import java.io.File;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.ArrayList;
@@ -79,11 +77,13 @@ public class JackParser {
         ArrayList<JackTree> children = new ArrayList<JackTree>();
 
         addNextToken(children, "keyword", tokens.get(0)); // field/static/var keyword
-        if (tokens.get(0).equals("field") || tokens.get(0).equals("static")) {
-            addNextToken(children, "keyword", tokens.get(0)); // field/static keyword
+
+        if (tokens.get(0).equals("int") || tokens.get(0).equals("char") || tokens.get(0).equals("boolean")) { // add type keyword/identifier
+            addNextToken(children, "keyword", tokens.get(0));
         } else {
-            addNextToken(children, "keyword", "var"); // var keyword
+            addNextToken(children, "identifier", tokens.get(0));
         }
+
         addNextToken(children, "identifier", tokens.get(0)); // var name
 
         while (tokens.get(0).equals(",")) {
@@ -263,7 +263,7 @@ public class JackParser {
 
         while (true) { // add term, if there's an operator add it and then the next term until there's no more
             children.add(new JackTree("term", parseTerm(tokens)));
-            if (tokens.size() > 0 && JackCompiler.contains(opSymbols, tokens.get(0))) {
+            if (tokens.size() > 0 && Compiler.contains(opSymbols, tokens.get(0))) {
                 addNextToken(children, "symbol", tokens.get(0)); // operator
             } else {
                 break;
@@ -282,7 +282,7 @@ public class JackParser {
             children.add(new JackTree("expression", parseExpression(tokens))); // expression in parentheses
             addNextToken(children, "symbol", tokens.get(0)); // )
 
-        } else if (JackCompiler.contains(unaryOpSymbols, tokens.get(0))) {
+        } else if (Compiler.contains(unaryOpSymbols, tokens.get(0))) {
 
             addNextToken(children, "symbol", tokens.get(0)); // unary operator
             children.add(new JackTree("term", parseTerm(tokens))); // term after unary operator
@@ -296,7 +296,7 @@ public class JackParser {
                 String strValue = fileStrings.get(Integer.parseInt(tokens.get(0).substring(8, tokens.get(0).length() - 2))); // get number out of ___STRING#___ str & get corresponding string from array
                 addNextToken(children, "stringConstant", strValue); // add string value
 
-            } else if (JackCompiler.contains(keywords, tokens.get(0))) {
+            } else if (Compiler.contains(keywords, tokens.get(0))) {
                 addNextToken(children, "keyword", tokens.get(0)); // if keyword, add it
 
             } else {

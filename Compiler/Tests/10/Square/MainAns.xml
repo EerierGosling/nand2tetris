@@ -4,7 +4,7 @@
   <symbol> { </symbol>
   <classVarDec>
     <keyword> static </keyword>
-    <keyword> boolean </keyword>
+    <keyword> var </keyword>
     <identifier> test </identifier>
     <symbol> ; </symbol>
   </classVarDec>
@@ -20,7 +20,7 @@
       <symbol> { </symbol>
       <varDec>
         <keyword> var </keyword>
-        <identifier> SquareGame </identifier>
+        <keyword> var </keyword>
         <identifier> game </identifier>
         <symbol> ; </symbol>
       </varDec>
@@ -84,7 +84,7 @@
       <symbol> { </symbol>
       <varDec>
         <keyword> var </keyword>
-        <keyword> int </keyword>
+        <keyword> var </keyword>
         <identifier> i </identifier>
         <symbol> , </symbol>
         <identifier> j </identifier>
@@ -92,13 +92,13 @@
       </varDec>
       <varDec>
         <keyword> var </keyword>
-        <identifier> String </identifier>
+        <keyword> var </keyword>
         <identifier> s </identifier>
         <symbol> ; </symbol>
       </varDec>
       <varDec>
         <keyword> var </keyword>
-        <identifier> Array </identifier>
+        <keyword> var </keyword>
         <identifier> a </identifier>
         <symbol> ; </symbol>
       </varDec>

@@ -1,4 +1,3 @@
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,10 +18,6 @@ public class Assembler { // todo: make it work if you flip the order of A and M
     
     public static ArrayList<Instruction> instructions = new ArrayList<>(); // holds a list of all the instructions in order as Instruction objects (created in first loop)
     public static ArrayList<String> instructionsBinary = new ArrayList<>(); // holds a list of all the instructions in order as binary strings (created in second loop) - what is printed to the file
-
-    public static Scanner fileReader;
-    public static Scanner sc = new Scanner(System.in);
-    
 
     public static String assemble(String input) throws Exception {
 

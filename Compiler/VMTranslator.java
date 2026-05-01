@@ -1,4 +1,3 @@
-import java.util.Scanner;
 import java.util.HashMap;
 
 public class VMTranslator { // todo: doesn't work if comment has no content
@@ -15,10 +14,6 @@ public class VMTranslator { // todo: doesn't work if comment has no content
     public static void incrementFunctionCallNumber() {
         functionCallNumber++;
     }
-
-    public static Scanner fileReader;
-    public static Scanner sc = new Scanner(System.in);
-
 
     public static String translateFile(String input, boolean isDirectory) throws Exception { // translates a single file or directory
 

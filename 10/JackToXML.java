@@ -159,11 +159,13 @@ public class JackToXML {
         ArrayList<JackTree> children = new ArrayList<JackTree>();
 
         addNextToken(children, "keyword", tokens.get(0)); // field/static/var keyword
-        if (tokens.get(0).equals("field") || tokens.get(0).equals("static")) {
-            addNextToken(children, "keyword", tokens.get(0)); // field/static keyword
+
+        if (tokens.get(0).equals("int") || tokens.get(0).equals("char") || tokens.get(0).equals("boolean")) { // add type keyword/identifier
+            addNextToken(children, "keyword", tokens.get(0));
         } else {
-            addNextToken(children, "keyword", "var"); // var keyword
+            addNextToken(children, "identifier", tokens.get(0));
         }
+
         addNextToken(children, "identifier", tokens.get(0)); // var name
 
         while (tokens.get(0).equals(",")) {

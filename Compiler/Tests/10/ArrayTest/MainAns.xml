@@ -14,19 +14,19 @@
       <symbol> { </symbol>
       <varDec>
         <keyword> var </keyword>
-        <identifier> Array </identifier>
+        <keyword> var </keyword>
         <identifier> a </identifier>
         <symbol> ; </symbol>
       </varDec>
       <varDec>
         <keyword> var </keyword>
-        <keyword> int </keyword>
+        <keyword> var </keyword>
         <identifier> length </identifier>
         <symbol> ; </symbol>
       </varDec>
       <varDec>
         <keyword> var </keyword>
-        <keyword> int </keyword>
+        <keyword> var </keyword>
         <identifier> i </identifier>
         <symbol> , </symbol>
         <identifier> sum </identifier>

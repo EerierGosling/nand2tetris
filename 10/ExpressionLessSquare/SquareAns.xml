@@ -4,7 +4,7 @@
   <symbol> { </symbol>
   <classVarDec>
     <keyword> field </keyword>
-    <keyword> var </keyword>
+    <keyword> int </keyword>
     <identifier> x </identifier>
     <symbol> , </symbol>
     <identifier> y </identifier>
@@ -12,7 +12,7 @@
   </classVarDec>
   <classVarDec>
     <keyword> field </keyword>
-    <keyword> var </keyword>
+    <keyword> int </keyword>
     <identifier> size </identifier>
     <symbol> ; </symbol>
   </classVarDec>
