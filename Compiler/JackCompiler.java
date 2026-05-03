@@ -14,12 +14,9 @@ public class JackCompiler {
 
     public static ArrayList<String> tokens = new ArrayList<String>(); // all tokens in file currently being compiled, static var for the same reason
 
-    public static String compile(String filename) throws Exception { // compile a jack file
-        return treeToXML(compileToTree(filename), 0); // convert the tree to an xml string and return it
-    }
+    public static String className;
 
-    public static JackTree compileToTree(String fullFile) throws Exception {
-        JackTree fullTree;
+    public static String compile(String fullFile) throws Exception {
         fileStrings = new ArrayList<String>(); // initialize to empty array
 
         String symbolsString = String.join("", symbols).replace("[", "\\[").replace("]", "\\]").replace("-", "\\-"); // string of all symbols for the regex expressions
@@ -46,327 +43,345 @@ public class JackCompiler {
             }
         }
 
+        String vmCode;
+
         if (tokens.size() == 0) {
             throw new Exception("empty file");
         } else if (!tokens.get(0).equals("class")) {
             throw new Exception("file must start with class");
         } else {
-            fullTree = compileClass(tokens);
+            vmCode = compileClass();
         }
 
-        return fullTree;
+        return vmCode;
     }
 
-    public static JackTree compileClass(ArrayList<String> tokens) throws Exception { // compile a class
-        JackTree fullTree = new JackTree("class"); // root of tree
+    public static String compileClass() throws Exception { // compile a class
 
-        fullTree.children = addNextToken(fullTree.children, "keyword", "class"); // class keyword
-        fullTree.children = addNextToken(fullTree.children, "identifier", tokens.get(0)); // name of class
-        fullTree.children = addNextToken(fullTree.children, "symbol", tokens.get(0)); // {
+        tokens.remove(0); // remove class keyword
+        className = tokens.remove(0);
+        tokens.remove(0); // remove {
 
         while (tokens.get(0).equals("field") || tokens.get(0).equals("static")) { // if has class var decs, add them to tree
-            fullTree.children.add(new JackTree("classVarDec", compileVarDec(tokens)));
+            compileVarDec();
         }
         while (tokens.get(0).equals("constructor") || tokens.get(0).equals("function") || tokens.get(0).equals("method")) { // if has subroutine decs, add them to tree
-            fullTree.children.add(new JackTree("subroutineDec", compileSubroutineDec(tokens)));
+            compileSubroutineDec();
         }
-        fullTree.children.add(new JackTree("symbol", "}")); // add closing } to tree and remove from tokens
-        return fullTree;
+
+        String vmCode = VMWriter.vmCode;
+
+        VMWriter.reset();
+
+        return vmCode;
     }
 
-    public static ArrayList<JackTree> compileVarDec(ArrayList<String> tokens) {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileVarDec() {
 
-        addNextToken(children, "keyword", tokens.get(0)); // field/static/var keyword
+        Kind varCategory = JackVariable.toKind(tokens.remove(0)); // field/static/var keyword
+        String varType = tokens.remove(0); // variable type
 
-        if (tokens.get(0).equals("int") || tokens.get(0).equals("char") || tokens.get(0).equals("boolean")) { // add type keyword/identifier
-            addNextToken(children, "keyword", tokens.get(0));
-        } else {
-            addNextToken(children, "identifier", tokens.get(0));
-        }
-
-        addNextToken(children, "identifier", tokens.get(0)); // var name
+        Symbols.add(varCategory, varType, tokens.remove(0)); // add var to subroutine symbol table
 
         while (tokens.get(0).equals(",")) {
-            addNextToken(children, "symbol", tokens.get(0)); // ,
-            addNextToken(children, "identifier", tokens.get(0)); // var name
+            tokens.remove(0); // remove ,
+            Symbols.add(varCategory, varType, tokens.remove(0)); // add next var to subroutine symbol table
         }
 
-        addNextToken(children, "symbol", tokens.get(0)); // ;
-
-        return children;
+        tokens.remove(0); // remove ;
     }
 
-    public static ArrayList<JackTree> compileStatements(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileStatements() throws Exception {
 
         if (tokens.size() == 0) {
-            return children;
+            return;
         }
 
         while (tokens.size() > 0) {
             String firstToken = tokens.get(0);
             if (firstToken.equals("let")) {
-                children.add(new JackTree("letStatement", compileLetStatement(tokens)));
+                compileLetStatement();
             } else if (firstToken.equals("do")) {
-                children.add(new JackTree("doStatement", compileDoStatement(tokens)));
+                compileDoStatement();
             } else if (firstToken.equals("if")) {
-                children.add(new JackTree("ifStatement", compileIfOrWhileStatement(tokens)));
+                compileIfOrWhileStatement();
             } else if (firstToken.equals("while")) {
-                children.add(new JackTree("whileStatement", compileIfOrWhileStatement(tokens)));
+                compileIfOrWhileStatement();
             } else if (firstToken.equals("return")) {
-                children.add(new JackTree("returnStatement", compileReturnStatement(tokens)));
+                compileReturnStatement();
             } else {
                 break;
             }
         }
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileLetStatement(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileLetStatement() throws Exception {
 
-        addNextToken(children, "keyword", tokens.get(0)); // let
-        addNextToken(children, "identifier", tokens.get(0)); // var name
+        tokens.remove(0); // let
+        JackVariable varName = Symbols.get(tokens.remove(0)); // var name
         if (tokens.get(0).equals("[")) {
-            addNextToken(children, "symbol", tokens.get(0)); // [
-            children.add(new JackTree("expression", compileExpression(tokens)));
-            addNextToken(children, "symbol", tokens.get(0)); // ]
+            tokens.remove(0); // [
+            VMWriter.writePush(varName.getSegment(), varName.index); // base address of array
+            compileExpression(); // index of array element
+            VMWriter.writeArithmetic(Command.ADD); // address of array element now on stack
+            tokens.remove(0); // ]
+            tokens.remove(0); // =
+            compileExpression(); // new value on stack
+            tokens.remove(0); // ;
+            VMWriter.writePop(Segment.TEMP, 0); // store new value in temp
+            VMWriter.writePop(Segment.POINTER, 1); // set THAT pointer to address of array element
+            VMWriter.writePush(Segment.TEMP, 0); // push new value back to stack
+            VMWriter.writePop(Segment.THAT, 0); // pop new value to array element
+        } else {
+            tokens.remove(0); // =
+            compileExpression(); // new value on stack
+            tokens.remove(0); // ;
+            VMWriter.writePop(varName.getSegment(), varName.index); // pop new value to variable
         }
-        addNextToken(children, "symbol", tokens.get(0)); // =
-        children.add(new JackTree("expression", compileExpression(tokens)));
-        addNextToken(children, "symbol", tokens.get(0)); // ;
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileDoStatement(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileDoStatement() throws Exception {
 
-        addNextToken(children, "keyword", tokens.get(0)); // do
-        addNextToken(children, "identifier", tokens.get(0)); // subroutine name or class/var name
+        tokens.remove(0); // do
+        String baseName = tokens.get(0); // subroutine name or class/var name
+        JackVariable var = Symbols.get(baseName);
+        if (var != null) {
+
+        } else {
+            if (tokens.get(0).equals(".")) {
+                baseName += tokens.remove(0) + tokens.remove(0); // . & subroutine name
+            } else {
+                baseName = className + "." + baseName; // method call on current class, add class name to beginning
+            }
+        }
+
         if (tokens.get(0).equals(".")) {
-            addNextToken(children, "symbol", tokens.get(0)); // .
-            addNextToken(children, "identifier", tokens.get(0)); // subroutine name
+            tokens.remove(0); // .
+            tokens.remove(0); // subroutine name
         }
-        addNextToken(children, "symbol", tokens.get(0)); // (
-        children.add(new JackTree("expressionList", compileExpressionList(tokens)));
-        addNextToken(children, "symbol", tokens.get(0)); // )
-        addNextToken(children, "symbol", tokens.get(0)); // ;
-
-        return children;
+        addNextToken("symbol", tokens.get(0)); // (
+        compileExpressionList();
+        addNextToken("symbol", tokens.get(0)); // )
+        addNextToken("symbol", tokens.get(0)); // ;
     }
 
-    public static ArrayList<JackTree> compileIfOrWhileStatement(ArrayList<String> tokens) throws Exception { // both are similar enough it makes sense to combine
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileIfOrWhileStatement() throws Exception { // both are similar enough it makes sense to combine
 
         String statementType = tokens.get(0);
-        addNextToken(children, "keyword", tokens.get(0)); // if/while
-        addNextToken(children, "symbol", tokens.get(0)); // (
-        children.add(new JackTree("expression", compileExpression(tokens))); // expression in the condition
-        addNextToken(children, "symbol", tokens.get(0)); // )
-        addNextToken(children, "symbol", tokens.get(0)); // {
-        children.add(new JackTree("statements", compileStatements(tokens))); // statements content of loop
-        addNextToken(children, "symbol", tokens.get(0)); // }
+        addNextToken("keyword", tokens.get(0)); // if/while
+        addNextToken("symbol", tokens.get(0)); // (
+        compileExpression(); // expression in the condition
+        addNextToken("symbol", tokens.get(0)); // )
+        addNextToken("symbol", tokens.get(0)); // {
+        compileStatements(); // statements content of loop
+        addNextToken("symbol", tokens.get(0)); // }
 
         if (statementType.equals("if") && tokens.size() > 0 && tokens.get(0).equals("else")) {
-            addNextToken(children, "keyword", tokens.get(0)); // else
-            addNextToken(children, "symbol", tokens.get(0)); // {
-            children.add(new JackTree("statements", compileStatements(tokens))); // statements content of else block
-            addNextToken(children, "symbol", tokens.get(0)); // }
+            addNextToken("keyword", tokens.get(0)); // else
+            addNextToken("symbol", tokens.get(0)); // {
+            compileStatements(); // statements content of else block
+            addNextToken("symbol", tokens.get(0)); // }
         }
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileReturnStatement(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileReturnStatement() throws Exception {
 
-        addNextToken(children, "keyword", tokens.get(0)); // return
+        addNextToken("keyword", tokens.get(0)); // return
         if (!tokens.get(0).equals(";")) {
-            children.add(new JackTree("expression", compileExpression(tokens))); // expression after return
+            compileExpression(); // expression after return
         }
-        addNextToken(children, "symbol", tokens.get(0)); // ;
-
-        return children;
+        addNextToken("symbol", tokens.get(0)); // ;
     }
 
-    public static ArrayList<JackTree> compileSubroutineDec(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileSubroutineDec() throws Exception {
 
-        addNextToken(children, "keyword", tokens.get(0)); // constructor/function/method
-        addNextToken(children, tokens.get(0).equals("void") ? "keyword" : "identifier", tokens.get(0)); // return type
-        addNextToken(children, "identifier", tokens.get(0)); // name
+        addNextToken("keyword", tokens.get(0)); // constructor/function/method
+        addNextToken(tokens.get(0).equals("void") ? "keyword" : "identifier", tokens.get(0)); // return type
+        addNextToken("identifier", tokens.get(0)); // name
 
-        addNextToken(children, "symbol", tokens.get(0)); // (
-        children.add(new JackTree("parameterList", compileParameterList(tokens))); // parameter list
-        addNextToken(children, "symbol", tokens.get(0)); // )
+        addNextToken("symbol", tokens.get(0)); // (
+        compileParameterList(); // parameter list
+        addNextToken("symbol", tokens.get(0)); // )
 
         // subroutine body parsing - not seperate function bc single use and not too long
         ArrayList<JackTree> bodyChildren = new ArrayList<JackTree>();
-        addNextToken(bodyChildren, "symbol", tokens.get(0)); // {
+        addNextToken("symbol", tokens.get(0)); // {
         while (tokens.get(0).equals("var")) {
-            bodyChildren.add(new JackTree("varDec", compileVarDec(tokens)));
+            compileVarDec();
         }
-        bodyChildren.add(new JackTree("statements", compileStatements(tokens)));
-        addNextToken(bodyChildren, "symbol", tokens.get(0)); // }
+        compileStatements();
+        addNextToken("symbol", tokens.get(0)); // }
         children.add(new JackTree("subroutineBody", bodyChildren));
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileParameterList(ArrayList<String> tokens) {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileParameterList() {
 
         if (tokens.get(0).equals(")")) {
-            return children;
+            return;
         }
 
         while (true) {
             if (tokens.get(0).equals("int") || tokens.get(0).equals("char") || tokens.get(0).equals("boolean")) { // add type keyword/identifier
-                addNextToken(children, "keyword", tokens.get(0));
+                addNextToken("keyword", tokens.get(0));
             } else {
-                addNextToken(children, "identifier", tokens.get(0));
+                addNextToken("identifier", tokens.get(0));
             }
-            addNextToken(children, "identifier", tokens.get(0)); // name of parameter
+            addNextToken("identifier", tokens.get(0)); // name of parameter
             if (tokens.get(0).equals(",")) { // if there's a comma add it
-                addNextToken(children, "symbol", tokens.get(0)); // ,
+                addNextToken("symbol", tokens.get(0)); // ,
             } else {
                 break;
             }
         }
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileExpressionList(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
+    public static void compileExpressionList() throws Exception {
 
         if (tokens.get(0).equals(")")) { // if empty return empty array
-            return children;
+            return;
         }
 
         while (true) { // add each expression while there are more
-            children.add(new JackTree("expression", compileExpression(tokens)));
+            compileExpression();
             if (tokens.get(0).equals(",")) {
-                addNextToken(children, "symbol", tokens.get(0)); // ,
+                addNextToken("symbol", tokens.get(0)); // ,
             } else {
                 break;
             }
         }
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileExpression(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
-
+    public static void compileExpression() throws Exception {
+        
         while (true) { // add term, if there's an operator add it and then the next term until there's no more
-            children.add(new JackTree("term", compileTerm(tokens)));
+            compileTerm();
             if (tokens.size() > 0 && Compiler.contains(opSymbols, tokens.get(0))) {
-                addNextToken(children, "symbol", tokens.get(0)); // operator
+                addNextToken("symbol", tokens.get(0)); // operator
             } else {
                 break;
             }
         }
-
-        return children;
     }
 
-    public static ArrayList<JackTree> compileTerm(ArrayList<String> tokens) throws Exception {
-        ArrayList<JackTree> children = new ArrayList<JackTree>();
-
+    public static void compileTerm() throws Exception {
+        
         if (tokens.get(0).equals("(")) {
 
-            addNextToken(children, "symbol", tokens.get(0)); // (
-            children.add(new JackTree("expression", compileExpression(tokens))); // expression in parentheses
-            addNextToken(children, "symbol", tokens.get(0)); // )
+            addNextToken("symbol", tokens.get(0)); // (
+            compileExpression(); // expression in parentheses
+            addNextToken("symbol", tokens.get(0)); // )
 
         } else if (Compiler.contains(unaryOpSymbols, tokens.get(0))) {
 
-            addNextToken(children, "symbol", tokens.get(0)); // unary operator
-            children.add(new JackTree("term", compileTerm(tokens))); // term after unary operator
+            addNextToken("symbol", tokens.get(0)); // unary operator
+            compileTerm(); // term after unary operator
 
         } else {
 
             if (tokens.get(0).matches("\\d+")) {
-                addNextToken(children, "integerConstant", tokens.get(0)); // integer constant
+                addNextToken("integerConstant", tokens.get(0)); // integer constant
 
             } else if (tokens.get(0).startsWith("__STRING")) {
                 String strValue = fileStrings.get(Integer.parseInt(tokens.get(0).substring(8, tokens.get(0).length() - 2))); // get number out of ___STRING#___ str & get corresponding string from array
-                addNextToken(children, "stringConstant", strValue); // add string value
+                addNextToken("stringConstant", strValue); // add string value
 
             } else if (Compiler.contains(keywords, tokens.get(0))) {
-                addNextToken(children, "keyword", tokens.get(0)); // if keyword, add it
+                addNextToken("keyword", tokens.get(0)); // if keyword, add it
 
             } else {
-                addNextToken(children, "identifier", tokens.get(0)); // else must be identifier
+                addNextToken("identifier", tokens.get(0)); // else must be identifier
             }
 
             if (tokens.size() > 0 && tokens.get(0).equals("[")) {
-                addNextToken(children, "symbol", tokens.get(0)); // [
-                children.add(new JackTree("expression", compileExpression(tokens))); // expression in array index
-                addNextToken(children, "symbol", tokens.get(0)); // ]
+                addNextToken("symbol", tokens.get(0)); // [
+                compileExpression(); // expression in array index
+                addNextToken("symbol", tokens.get(0)); // ]
 
             } else if (tokens.size() > 0 && tokens.get(0).equals("(")) {
-                addNextToken(children, "symbol", tokens.get(0)); // (
-                children.add(new JackTree("expressionList", compileExpressionList(tokens)));
-                addNextToken(children, "symbol", tokens.get(0)); // )
+                addNextToken("symbol", tokens.get(0)); // (
+                compileExpressionList();
+                addNextToken("symbol", tokens.get(0)); // )
 
             } else if (tokens.size() > 1 && tokens.get(0).equals(".")) {
-                addNextToken(children, "symbol", tokens.get(0)); // .
-                addNextToken(children, "identifier", tokens.get(0)); // subroutine name
-                addNextToken(children, "symbol", tokens.get(0)); // (
-                children.add(new JackTree("expressionList", compileExpressionList(tokens))); // expression list in subroutine call
-                addNextToken(children, "symbol", tokens.get(0)); // )
+                addNextToken("symbol", tokens.get(0)); // .
+                addNextToken("identifier", tokens.get(0)); // subroutine name
+                addNextToken("symbol", tokens.get(0)); // (
+                compileExpressionList(); // expression list in subroutine call
+                addNextToken("symbol", tokens.get(0)); // )
             }
         }
+    }
+}
 
-        return children;
+class Symbols {
+    public static HashMap<String, JackVariable> classSymbols = new HashMap<String, JackVariable>();
+    public static int staticCount = 0;
+    public static int fieldCount = 0;
+
+    public static HashMap<String, JackVariable> subroutineSymbols = new HashMap<String, JackVariable>();
+    public static int argCount = 0;
+    public static int varCount = 0;
+
+    public static void add(Kind kind, String type, String name) {
+        JackVariable variable = new JackVariable(type, kind, incrementCount(kind));
+        if (isClass(kind)) {
+            classSymbols.put(name, variable);
+        } else {
+            subroutineSymbols.put(name, variable);
+        }
     }
 
-    public static ArrayList<JackTree> addNextToken(ArrayList<JackTree> arr, String tokenType, String tokenValue) { // add next token to the tree and remove it from tokens list - made bc its more consise than two lines of code everywhere
-        arr.add(new JackTree(tokenType, tokenValue));
-        tokens.remove(0);
-        return arr;
+    public static boolean isClass(Kind kind) {
+        return kind == Kind.STATIC || kind == Kind.FIELD;
     }
 
-    public static String treeToXML(JackTree tree, int indentLevel) { // converts the jacktree to an xml string recursively
-        String xml = "";
-        String indent = "";
-        for (int i = 0; i < indentLevel; i++) {
-            indent += "  ";
+    public static int incrementCount(Kind kind) {
+        if (kind == Kind.STATIC) {
+            return staticCount++;
+        } else if (kind == Kind.FIELD) {
+            return fieldCount++;
+        } else if (kind == Kind.ARG) {
+            return argCount++;
+        } else if (kind == Kind.VAR) {
+            return varCount++;
+        } else {
+            return -1;
         }
+    }
 
-        if (tree.isToken) { // if its a token, add the token type with value
-            xml += indent + "<" + tree.tokenType + "> " + tree.tokenValue.replace("<", "&lt;").replace(">", "&gt;") + " </" + tree.tokenType + ">\n";
-        } else { // if enclosing more xml, sandwich the children with the opening and closing tags
-            xml += indent + "<" + tree.tokenType + ">\n";
-            for (JackTree child : tree.children) {
-                xml += treeToXML(child, indentLevel + 1);
-            }
-            xml += indent + "</" + tree.tokenType + ">\n";
+    public static JackVariable get(String name) {
+        if (subroutineSymbols.containsKey(name)) {
+            return subroutineSymbols.get(name);
+        } else if (classSymbols.containsKey(name)) {
+            return classSymbols.get(name);
+        } else {
+            return null; // not found
         }
-        return xml;
+    }
+
+    public static void resetSubroutine() {
+        subroutineSymbols = new HashMap<String, JackVariable>();
+        argCount = 0;
+        varCount = 0;
     }
 }
 
 class VMWriter {
-    public static HashMap<String, JackVariable> classSymbols = new HashMap<String, JackVariable>();
-    public static HashMap<String, JackVariable> subroutineSymbols = new HashMap<String, JackVariable>();
-
     public static String vmCode = "";
 
-    public static void writePush() {}
-    public static void writePop() {}
-    public static void writeArithmetic() {}
-    public static void writeLabel() {}
-    public static void writeGoto() {}
-    public static void writeIf() {}
+    public static void writePush(Segment segment, int index) {}
+    public static void writePop(Segment segment, int index) {}
+    public static void writeArithmetic(Command command) {}
+    public static void writeLabel(String label) {}
+    public static void writeGoto(String label) {}
+    public static void writeIf(String label) {}
     public static void writeCall() {}
     public static void writeFunction() {}
     public static void writeReturn() {}
+
+    public static void reset() {
+        vmCode = "";
+    }
 }
 
 enum Kind { STATIC, FIELD, ARG, VAR }
@@ -376,13 +391,41 @@ enum Segment { CONST, ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP }
 enum Command { ADD, SUB, NEG, EQ, GT, LT, AND, OR, NOT }
 
 class JackVariable {
-    public String name;
     public String type;
-    public Kind kind; 
+    public Kind kind;
+    public int index;
 
-    public JackVariable(String name, String type, Kind kind) {
-        this.name = name;
+    public JackVariable(String type, Kind kind, int index) {
         this.type = type;
         this.kind = kind;
+        this.index = index;
+    }
+
+    public static Kind toKind(String kindStr) {
+        if (kindStr.equals("static")) {
+            return Kind.STATIC;
+        } else if (kindStr.equals("field")) {
+            return Kind.FIELD;
+        } else if (kindStr.equals("arg")) {
+            return Kind.ARG;
+        } else if (kindStr.equals("var")) {
+            return Kind.VAR;
+        } else {
+            return null;
+        }
+    }
+
+    public Segment getSegment() {
+        if (kind == Kind.STATIC) {
+            return Segment.STATIC;
+        } else if (kind == Kind.FIELD) {
+            return Segment.THIS;
+        } else if (kind == Kind.ARG) {
+            return Segment.ARG;
+        } else if (kind == Kind.VAR) {
+            return Segment.LOCAL;
+        } else {
+            return null;
+        }
     }
 }
