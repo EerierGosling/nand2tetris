@@ -15,6 +15,7 @@ public class JackCompiler {
     public static ArrayList<String> tokens = new ArrayList<String>(); // all tokens in file currently being compiled, static var for the same reason
 
     public static String className;
+    public static int jumpCounter = 0; // for generating unique labels in if and while statements
 
     public static String compile(String fullFile) throws Exception {
         fileStrings = new ArrayList<String>(); // initialize to empty array
@@ -104,9 +105,9 @@ public class JackCompiler {
             } else if (firstToken.equals("do")) {
                 compileDoStatement();
             } else if (firstToken.equals("if")) {
-                compileIfOrWhileStatement();
+                compileIfStatement();
             } else if (firstToken.equals("while")) {
-                compileIfOrWhileStatement();
+                compileWhileStatement();
             } else if (firstToken.equals("return")) {
                 compileReturnStatement();
             } else {
@@ -118,10 +119,10 @@ public class JackCompiler {
     public static void compileLetStatement() throws Exception {
 
         tokens.remove(0); // let
-        JackVariable varName = Symbols.get(tokens.remove(0)); // var name
+        JackVariable var = Symbols.get(tokens.remove(0)); // var name
         if (tokens.get(0).equals("[")) {
             tokens.remove(0); // [
-            VMWriter.writePush(varName.getSegment(), varName.index); // base address of array
+            VMWriter.writePushVar(var); // base address of array
             compileExpression(); // index of array element
             VMWriter.writeArithmetic(Command.ADD); // address of array element now on stack
             tokens.remove(0); // ]
@@ -136,7 +137,7 @@ public class JackCompiler {
             tokens.remove(0); // =
             compileExpression(); // new value on stack
             tokens.remove(0); // ;
-            VMWriter.writePop(varName.getSegment(), varName.index); // pop new value to variable
+            VMWriter.writePopVar(var); // pop new value to variable
         }
     }
 
@@ -145,73 +146,108 @@ public class JackCompiler {
         tokens.remove(0); // do
         String baseName = tokens.get(0); // subroutine name or class/var name
         JackVariable var = Symbols.get(baseName);
-        if (var != null) {
+        int numArgs;
 
+        if (var != null) {
+            tokens.remove(0); // .
+            baseName = var.type + "." + tokens.remove(0);
+            tokens.remove(0); // (
+            VMWriter.writePushVar(var); // push object being called on as first argument
+            numArgs = compileExpressionList() + 1; // expression list in method call, add 1 for object being passed as arg
         } else {
             if (tokens.get(0).equals(".")) {
                 baseName += tokens.remove(0) + tokens.remove(0); // . & subroutine name
             } else {
                 baseName = className + "." + baseName; // method call on current class, add class name to beginning
             }
+            tokens.remove(0); // (
+            numArgs = compileExpressionList(); // expression list in subroutine call
         }
-
-        if (tokens.get(0).equals(".")) {
-            tokens.remove(0); // .
-            tokens.remove(0); // subroutine name
-        }
-        addNextToken("symbol", tokens.get(0)); // (
-        compileExpressionList();
-        addNextToken("symbol", tokens.get(0)); // )
-        addNextToken("symbol", tokens.get(0)); // ;
+        tokens.remove(0); // )
+        tokens.remove(0); // ;
+        VMWriter.writeCall(baseName, numArgs);
+        VMWriter.writePop(Segment.TEMP, 0); // pop return value off the stack (not used)
     }
 
-    public static void compileIfOrWhileStatement() throws Exception { // both are similar enough it makes sense to combine
+    public static void compileIfStatement() throws Exception {
 
-        String statementType = tokens.get(0);
-        addNextToken("keyword", tokens.get(0)); // if/while
-        addNextToken("symbol", tokens.get(0)); // (
+        tokens.remove(0); // if
+        tokens.remove(0); // (
         compileExpression(); // expression in the condition
-        addNextToken("symbol", tokens.get(0)); // )
-        addNextToken("symbol", tokens.get(0)); // {
-        compileStatements(); // statements content of loop
-        addNextToken("symbol", tokens.get(0)); // }
+        tokens.remove(0); // )
+        tokens.remove(0); // {
+        VMWriter.writeArithmetic(Command.NOT); // negate condition for if-goto
 
-        if (statementType.equals("if") && tokens.size() > 0 && tokens.get(0).equals("else")) {
-            addNextToken("keyword", tokens.get(0)); // else
-            addNextToken("symbol", tokens.get(0)); // {
-            compileStatements(); // statements content of else block
-            addNextToken("symbol", tokens.get(0)); // }
+        // either else or end depending on if there's an else statement
+        // if else, is jump to else
+        // if no else, is jump to end of if statement
+        String jump1 = "JUMP" + jumpCounter++;
+        VMWriter.writeIf(jump1); 
+        compileStatements(); // statements content of loop
+        tokens.remove(0); // }
+
+        if (tokens.size() > 0 && tokens.get(0).equals("else")) {
+            String jump2 = "JUMP" + jumpCounter++; // jump to end of if/else statement after if block
+            VMWriter.writeGoto(jump2);
+            VMWriter.writeLabel(jump1); // label for start of else block
+            tokens.remove(0); // else
+            tokens.remove(0); // {
+            compileStatements(); // contents of else block
+            tokens.remove(0); // }
+            VMWriter.writeLabel(jump2); // label for end of if/else statement
+        } else {
+            VMWriter.writeLabel(jump1); // if no else, add label for end of if statement
         }
+    }
+
+    public static void compileWhileStatement() throws Exception {
+
+        String startLabel = "JUMP" + jumpCounter++;
+        String endLabel = "JUMP" + jumpCounter++;
+        VMWriter.writeLabel(startLabel);
+        tokens.remove(0); // while
+        tokens.remove(0); // (
+        compileExpression(); // expression in the condition
+        tokens.remove(0); // )
+        VMWriter.writeArithmetic(Command.NOT); // negate condition for if-goto
+        VMWriter.writeIf(endLabel); // if condition false, jump to end of loop
+
+        tokens.remove(0); // {
+        compileStatements(); // statements content of loop
+        tokens.remove(0); // }
+        VMWriter.writeGoto(startLabel); // go to start to check condition again
+        VMWriter.writeLabel(endLabel); // end of while loop
     }
 
     public static void compileReturnStatement() throws Exception {
 
-        addNextToken("keyword", tokens.get(0)); // return
+        tokens.remove(0); // return
         if (!tokens.get(0).equals(";")) {
             compileExpression(); // expression after return
+        } else {
+            VMWriter.writePush(Segment.CONST, 0); // push 0 for void return
         }
-        addNextToken("symbol", tokens.get(0)); // ;
+        tokens.remove(0); // ;
+        VMWriter.writeReturn();
     }
 
     public static void compileSubroutineDec() throws Exception {
 
-        addNextToken("keyword", tokens.get(0)); // constructor/function/method
-        addNextToken(tokens.get(0).equals("void") ? "keyword" : "identifier", tokens.get(0)); // return type
-        addNextToken("identifier", tokens.get(0)); // name
+        tokens.remove(0); // constructor/function/method
+        tokens.remove(0); // return type
+        tokens.remove(0); // name
 
-        addNextToken("symbol", tokens.get(0)); // (
+        tokens.remove(0); // (
         compileParameterList(); // parameter list
-        addNextToken("symbol", tokens.get(0)); // )
+        tokens.remove(0); // )
 
         // subroutine body parsing - not seperate function bc single use and not too long
-        ArrayList<JackTree> bodyChildren = new ArrayList<JackTree>();
-        addNextToken("symbol", tokens.get(0)); // {
+        tokens.remove(0); // {
         while (tokens.get(0).equals("var")) {
             compileVarDec();
         }
         compileStatements();
-        addNextToken("symbol", tokens.get(0)); // }
-        children.add(new JackTree("subroutineBody", bodyChildren));
+        tokens.remove(0); // }
     }
 
     public static void compileParameterList() {
@@ -235,20 +271,24 @@ public class JackCompiler {
         }
     }
 
-    public static void compileExpressionList() throws Exception {
+    public static int compileExpressionList() throws Exception {
+
+        int argCount = 0;
 
         if (tokens.get(0).equals(")")) { // if empty return empty array
-            return;
+            return argCount;
         }
 
         while (true) { // add each expression while there are more
             compileExpression();
+            argCount++;
             if (tokens.get(0).equals(",")) {
                 addNextToken("symbol", tokens.get(0)); // ,
             } else {
                 break;
             }
         }
+        return argCount;
     }
 
     public static void compileExpression() throws Exception {
@@ -370,12 +410,14 @@ class VMWriter {
     public static String vmCode = "";
 
     public static void writePush(Segment segment, int index) {}
+    public static void writePushVar(JackVariable var) {}
     public static void writePop(Segment segment, int index) {}
+    public static void writePopVar(JackVariable var) {}
     public static void writeArithmetic(Command command) {}
     public static void writeLabel(String label) {}
     public static void writeGoto(String label) {}
     public static void writeIf(String label) {}
-    public static void writeCall() {}
+    public static void writeCall(String funcName, int argCount) {}
     public static void writeFunction() {}
     public static void writeReturn() {}
 
