@@ -27,8 +27,8 @@ public class Compiler {
         int outputNum = sc.nextInt();
         sc.nextLine();
 
-        FileType.type inputType = FileType.getType(inputNum);
-        FileType.type outputType = FileType.getType(outputNum);
+        FileType.Type inputType = FileType.getType(inputNum);
+        FileType.Type outputType = FileType.getType(outputNum);
 
         System.out.println("");
         System.out.println("what file or directory would you like to compile?");
@@ -83,24 +83,24 @@ public class Compiler {
 
 }
 
-public class FileType {
+class FileType {
 
-    public enum type {
+    public enum Type {
         HACK, ASM, VM, XML, JACK
     }
 
-    public static type getType(int num) {
+    public static Type getType(int num) {
         switch (num) {
             case 1:
-                return type.HACK;
+                return Type.HACK;
             case 2:
-                return type.ASM;
+                return Type.ASM;
             case 3:
-                return type.VM;
+                return Type.VM;
             case 4:
-                return type.XML;
+                return Type.XML;
             case 5:
-                return type.JACK;
+                return Type.JACK;
             default:
                 throw new IllegalArgumentException("invalid type number: " + num);
         }
