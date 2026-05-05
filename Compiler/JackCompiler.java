@@ -235,11 +235,15 @@ public class JackCompiler {
 
         tokens.remove(0); // constructor/function/method
         tokens.remove(0); // return type
-        tokens.remove(0); // name
+        String funcName = tokens.remove(0); // name
+
+        int funcLoc = VMWriter.vmCode.size(); // want to put the function def before the param list compilation - need to know where func starts
 
         tokens.remove(0); // (
-        compileParameterList(); // parameter list
+        int varCount = compileParameterList(); // parameter list
         tokens.remove(0); // )
+
+        VMWriter.writeFunction(funcName, varCount, funcLoc); // write function declaration with number of local variables and location in code for function start
 
         // subroutine body parsing - not seperate function bc single use and not too long
         tokens.remove(0); // {
@@ -250,13 +254,15 @@ public class JackCompiler {
         tokens.remove(0); // }
     }
 
-    public static void compileParameterList() {
+    public static int compileParameterList() {
 
         if (tokens.get(0).equals(")")) {
-            return;
+            return 0;
         }
 
+        int paramCount = 0;
         while (true) {
+            paramCount++;
             if (tokens.get(0).equals("int") || tokens.get(0).equals("char") || tokens.get(0).equals("boolean")) { // add type keyword/identifier
                 addNextToken("keyword", tokens.get(0));
             } else {
@@ -269,6 +275,7 @@ public class JackCompiler {
                 break;
             }
         }
+        return paramCount;
     }
 
     public static int compileExpressionList() throws Exception {
@@ -407,7 +414,7 @@ class Symbols {
 }
 
 class VMWriter {
-    public static String vmCode = "";
+    public static ArrayList<String> vmCode = new ArrayList<String>();
 
     public static void writePush(Segment segment, int index) {}
     public static void writePushVar(JackVariable var) {}
@@ -418,11 +425,13 @@ class VMWriter {
     public static void writeGoto(String label) {}
     public static void writeIf(String label) {}
     public static void writeCall(String funcName, int argCount) {}
-    public static void writeFunction() {}
+    public static void writeFunction(String funcName, int varCount, int codeLocation) {
+
+    }
     public static void writeReturn() {}
 
     public static void reset() {
-        vmCode = "";
+        vmCode = new ArrayList<String>();
     }
 }
 
