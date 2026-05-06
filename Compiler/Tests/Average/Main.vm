@@ -44,12 +44,12 @@ call Array.new 1
 pop local 0
 push constant 0
 pop local 2
-label JUMP88
+label JUMP0
 push local 2
 push local 1
 lt
 not
-if-goto JUMP89
+if-goto JUMP1
 push local 0
 push local 2
 add
@@ -104,8 +104,8 @@ push local 2
 push constant 1
 add
 pop local 2
-goto JUMP88
-label JUMP89
+goto JUMP0
+label JUMP1
 push constant 15
 call String.new 1
 push constant 84

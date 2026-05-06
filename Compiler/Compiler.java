@@ -3,8 +3,6 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.FileWriter;
 
-// Tests/10/ArrayTest/Main.jack
-
 public class Compiler {
 
     public static Scanner sc = new Scanner(System.in);
@@ -53,20 +51,20 @@ public class Compiler {
 
 
         System.out.println("");
-        System.out.println("what file or directory would you like to compile?");
-        System.out.println("\u001B[38;2;140;140;140m(write 'all' to translate all ." + inputType.toString() + " files in all subdirectories)\u001B[0m"); // \u001B[38;2;140;140;140m is the ansi escape sequence for a shade of grey (140, 140, 140), \u001B[0m resets color to default (found it on stack overflow)
+        System.out.println("what file or folder would you like to compile?");
+        System.out.println("\u001B[38;2;140;140;140m(write 'all' to translate all ." + inputType.toString() + " files in all subfolders)\u001B[0m"); // \u001B[38;2;140;140;140m is the ansi escape sequence for a shade of grey (140, 140, 140), \u001B[0m resets color to default (found it on stack overflow)
 
         String inputFile = sc.nextLine();
 
-        if (inputFile.equals("all")) { // parse all files
-            ArrayList<String> allFiles = getFiles("./", inputType.toString()); // get all files in current directory and subdirectories
+        if (inputFile.equals("all") || new File(inputFile).isDirectory()) { // parse all files
+            if (inputFile.equals("all")) {
+                inputFile = "./";
+            }
+            ArrayList<String> allFiles = getFiles(inputFile, inputType.toString()); // get all files in directory and subdirectories
             for (String fileName : allFiles) {
                 compile(fileName, inputType, outputType);
             }
         } else { // parse user-given file
-            if (inputFile.equals("")){
-                inputFile = "Tests/10/ArrayTest/Main.jack";
-            }
             compile(inputFile, inputType, outputType);
         }
     }
