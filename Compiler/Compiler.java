@@ -3,6 +3,8 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.FileWriter;
 
+// Tests/10/ArrayTest/Main.jack
+
 public class Compiler {
 
     public static Scanner sc = new Scanner(System.in);
@@ -22,34 +24,75 @@ public class Compiler {
         System.out.println("  \u001B[38;2;140;140;140m1.\u001B[0m .hack");
         if (inputNum > 1) System.out.println("  \u001B[38;2;140;140;140m2.\u001B[0m .asm");
         if (inputNum > 2) System.out.println("  \u001B[38;2;140;140;140m3.\u001B[0m .vm");
-        if (inputNum > 2) System.out.println("  \u001B[38;2;140;140;140m4.\u001B[0m .xml");
         
         int outputNum = sc.nextInt();
         sc.nextLine();
 
-        FileType.Type inputType = FileType.getType(inputNum);
-        FileType.Type outputType = FileType.getType(outputNum);
+        FileType inputType;
+        FileType outputType;
+
+        if (inputNum == 1) {
+            inputType = FileType.ASM;
+        } else if (inputNum == 2) {
+            inputType = FileType.VM;
+        } else if (inputNum == 3) {
+            inputType = FileType.JACK;
+        } else {
+            inputType = null;
+        }
+
+        if (outputNum == 1) {
+            outputType = FileType.HACK;
+        } else if (outputNum == 2) {
+            outputType = FileType.ASM;
+        } else if (outputNum == 3) {
+            outputType = FileType.VM;
+        } else {
+            outputType = null;
+        }
+
 
         System.out.println("");
         System.out.println("what file or directory would you like to compile?");
-        System.out.println("\u001B[38;2;140;140;140m(write 'all' to translate all .jack files in all subdirectories or leave the line blank to use ArrayTest/Main.jack)\u001B[0m"); // \u001B[38;2;140;140;140m is the ansi escape sequence for a shade of grey (140, 140, 140), \u001B[0m resets color to default (found it on stack overflow)
+        System.out.println("\u001B[38;2;140;140;140m(write 'all' to translate all ." + inputType.toString() + " files in all subdirectories)\u001B[0m"); // \u001B[38;2;140;140;140m is the ansi escape sequence for a shade of grey (140, 140, 140), \u001B[0m resets color to default (found it on stack overflow)
 
         String inputFile = sc.nextLine();
 
-        if (inputFile.length() == 0) { // use default
-            inputFile = "ArrayTest/Main.jack";
-            JackParser.parseJack(inputFile);
-        } else if (inputFile.equals("all")) { // parse all files
-            ArrayList<String> allFiles = getFiles("./");
+        if (inputFile.equals("all")) { // parse all files
+            ArrayList<String> allFiles = getFiles("./", inputType.toString()); // get all files in current directory and subdirectories
             for (String fileName : allFiles) {
-                JackParser.parseJack(fileName);
+                compile(fileName, inputType, outputType);
             }
         } else { // parse user-given file
-            JackParser.parseJack(inputFile);
+            if (inputFile.equals("")){
+                inputFile = "Tests/10/ArrayTest/Main.jack";
+            }
+            compile(inputFile, inputType, outputType);
         }
     }
 
-    public static ArrayList<String> getFiles(String folderPath) { // gets all jack files in the directory
+    public static void compile(String file, FileType inputType, FileType outputType) throws Exception {
+        Scanner sc = new Scanner(new File(file));
+        String fileText = sc.useDelimiter("\\A").next(); // read the whole file into a string
+        sc.close();
+
+        if (inputType == FileType.JACK) {
+            fileText = JackCompiler.compile(fileText);
+        }
+        if (inputType.toInt() >= FileType.VM.toInt()  && outputType.toInt() < FileType.VM.toInt()) {
+            fileText = VMTranslator.translate(fileText, true); // todo: check if it's really a directory
+        }
+        if (inputType.toInt() >= FileType.ASM.toInt()  && outputType.toInt() < FileType.ASM.toInt()) {
+            fileText = Assembler.assemble(fileText);
+        }
+        //  + "_ans"
+        String outputFile = file.substring(0, file.lastIndexOf(".")) + "." + outputType.toString(); // change the file extension to the output type
+        FileWriter writer = new FileWriter(new File(outputFile));
+        writer.write(fileText);
+        writer.close();
+    }
+
+    public static ArrayList<String> getFiles(String folderPath, String fileType) { // gets all files of a specific type in the directory
         File folder = new File(folderPath);
         File[] listOfFiles = folder.listFiles();
         ArrayList<String> fileNames = new ArrayList<String>();
@@ -61,10 +104,10 @@ public class Compiler {
         }
 
         for (File file : listOfFiles) {
-            if (file.isFile() && file.getName().endsWith(".jack")) {
+            if (file.isFile() && file.getName().endsWith("." + fileType)) {
                 fileNames.add(folderPathAppend + "/" + file.getName());
             } else if (file.isDirectory()) {
-                ArrayList<String> subfolderFiles = getFiles(folderPathAppend + "/" + file.getName());
+                ArrayList<String> subfolderFiles = getFiles(folderPathAppend + "/" + file.getName(), fileType);
                 fileNames.addAll(subfolderFiles);
             }
         }
@@ -83,26 +126,40 @@ public class Compiler {
 
 }
 
-class FileType {
+enum FileType {
+    HACK, ASM, VM, XML, JACK;
 
-    public enum Type {
-        HACK, ASM, VM, XML, JACK
+    public String toString() {
+        switch (this) {
+            case HACK:
+                return "hack";
+            case ASM:
+                return "asm";
+            case VM:
+                return "vm";
+            case XML:
+                return "xml";
+            case JACK:
+                return "jack";
+            default:
+                return null;
+        }
     }
 
-    public static Type getType(int num) {
-        switch (num) {
-            case 1:
-                return Type.HACK;
-            case 2:
-                return Type.ASM;
-            case 3:
-                return Type.VM;
-            case 4:
-                return Type.XML;
-            case 5:
-                return Type.JACK;
+    public int toInt() {
+        switch (this) {
+            case HACK:
+                return 1;
+            case ASM:
+                return 2;
+            case VM:
+                return 3;
+            case XML:
+                return 4;
+            case JACK:
+                return 5;
             default:
-                throw new IllegalArgumentException("invalid type number: " + num);
+                return -1;
         }
     }
 }

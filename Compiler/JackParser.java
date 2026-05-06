@@ -351,7 +351,7 @@ public class JackParser {
     }
 }
 
-public class JackTree { // class for the tree structure of the parsed code
+class JackTree { // class for the tree structure of the parsed code
     public boolean isToken; // if true, has a tokenValue and doesn't have children
     public ArrayList<JackTree> children; // children of the node
     public String tokenType; // type of the node (keyword, identifier, etc)

@@ -15,10 +15,9 @@ public class VMTranslator { // todo: doesn't work if comment has no content
         functionCallNumber++;
     }
 
-    public static String translateFile(String input, boolean isDirectory) throws Exception { // translates a single file or directory
+    public static String translate(String input, boolean isDirectory) throws Exception { // translates a single file or directory
 
         String output;
-
 
         if (isDirectory) { // only need bootstrap code if there are multiple files, otherwise the single file just needs RETURN_INTERNAL routine if it has any returns
             output = Bootstrapping.fullBootstrap + "\n";

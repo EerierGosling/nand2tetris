@@ -29,6 +29,7 @@ public class JackCompiler {
 
     public static String compile(String fullFile) throws Exception {
         fileStrings = new ArrayList<String>(); // initialize to empty array
+        Symbols.reset();
 
         String symbolsString = String.join("", symbols).replace("[", "\\[").replace("]", "\\]").replace("-", "\\-"); // string of all symbols for the regex expressions
         
@@ -54,6 +55,8 @@ public class JackCompiler {
             }
         }
 
+        System.out.println(tokens);
+
         String vmCode;
 
         if (tokens.size() == 0) {
@@ -69,6 +72,10 @@ public class JackCompiler {
 
     public static String compileClass() throws Exception { // compile a class
 
+        System.out.println("compile class");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
         tokens.remove(0); // remove class keyword
         className = tokens.remove(0);
         tokens.remove(0); // remove {
@@ -80,29 +87,49 @@ public class JackCompiler {
             compileSubroutineDec();
         }
 
-        String vmCode = VMWriter.vmCode;
+        String vmCode = String.join("\n", VMWriter.vmCode); // get vm code from vm writer
 
         VMWriter.reset();
+
+        System.out.println("compile class end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         return vmCode;
     }
 
-    public static void compileVarDec() {
+    public static int compileVarDec() {
+
+        System.out.println("compile vardec");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         Kind varCategory = JackVariable.toKind(tokens.remove(0)); // field/static/var keyword
         String varType = tokens.remove(0); // variable type
 
         Symbols.add(varCategory, varType, tokens.remove(0)); // add var to subroutine symbol table
 
+        int numVars = 1;
         while (tokens.get(0).equals(",")) {
             tokens.remove(0); // remove ,
             Symbols.add(varCategory, varType, tokens.remove(0)); // add next var to subroutine symbol table
+            numVars++;
         }
 
         tokens.remove(0); // remove ;
+
+        System.out.println("compile vardec end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
+        return numVars;
     }
 
     public static void compileStatements() throws Exception {
+
+        System.out.println("compile statements");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         if (tokens.size() == 0) {
             return;
@@ -124,9 +151,17 @@ public class JackCompiler {
                 break;
             }
         }
+
+        System.out.println("compile statements end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileLetStatement() throws Exception {
+
+        System.out.println("compile let statement");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // let
         JackVariable var = Symbols.get(tokens.remove(0)); // var name
@@ -149,14 +184,22 @@ public class JackCompiler {
             tokens.remove(0); // ;
             VMWriter.writePopVar(var); // pop new value to variable
         }
+
+        System.out.println("compile let statement end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileDoStatement() throws Exception {
 
+        System.out.println("compile do statement");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
         tokens.remove(0); // do
-        String baseName = tokens.get(0); // subroutine name or class/var name
+        String baseName = tokens.remove(0); // subroutine name or class/var name
         JackVariable var = Symbols.get(baseName);
-        int numArgs;
+        int numArgs = 0;
 
         if (var != null) {
             tokens.remove(0); // .
@@ -169,17 +212,27 @@ public class JackCompiler {
                 baseName += tokens.remove(0) + tokens.remove(0); // . & subroutine name
             } else {
                 baseName = className + "." + baseName; // method call on current class, add class name to beginning
+                VMWriter.writePush(Segment.POINTER, 0); // push this as first arg for method call
+                numArgs = 1; // add this as an arg
             }
             tokens.remove(0); // (
-            numArgs = compileExpressionList(); // expression list in subroutine call
+            numArgs += compileExpressionList(); // expression list in subroutine call
         }
         tokens.remove(0); // )
         tokens.remove(0); // ;
         VMWriter.writeCall(baseName, numArgs);
         VMWriter.writePop(Segment.TEMP, 0); // pop return value off the stack (not used)
+
+        System.out.println("compile do statement end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileIfStatement() throws Exception {
+
+        System.out.println("compile if statement");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // if
         tokens.remove(0); // (
@@ -208,9 +261,17 @@ public class JackCompiler {
         } else {
             VMWriter.writeLabel(jump1); // if no else, add label for end of if statement
         }
+
+        System.out.println("compile if statement end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileWhileStatement() throws Exception {
+
+        System.out.println("compile while statement");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         String startLabel = "JUMP" + jumpCounter++;
         String endLabel = "JUMP" + jumpCounter++;
@@ -227,9 +288,17 @@ public class JackCompiler {
         tokens.remove(0); // }
         VMWriter.writeGoto(startLabel); // go to start to check condition again
         VMWriter.writeLabel(endLabel); // end of while loop
+
+        System.out.println("compile while statement end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileReturnStatement() throws Exception {
+
+        System.out.println("compile return statement");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // return
         if (!tokens.get(0).equals(";")) {
@@ -239,34 +308,61 @@ public class JackCompiler {
         }
         tokens.remove(0); // ;
         VMWriter.writeReturn();
+
+        System.out.println("compile return statement end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileSubroutineDec() throws Exception {
 
+        System.out.println("compile subroutine dec");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
         Symbols.resetSubroutine();
 
-        boolean isMethod = tokens.remove(0).equals("method"); // constructor/function/method
+        String subroutineType = tokens.remove(0); // constructor, method, or function
+        boolean isMethod = subroutineType.equals("method");
+        boolean isConstructor = subroutineType.equals("constructor");
         tokens.remove(0); // return type
         String funcName = tokens.remove(0); // name
 
-        int funcLoc = VMWriter.vmCode.size(); // want to put the function def before the param list compilation - need to know where func starts
-
         tokens.remove(0); // (
-        int varCount = compileParameterList(isMethod); // parameter list
+        compileParameterList(isMethod); // parameter list
         tokens.remove(0); // )
-
-        VMWriter.writeFunction(funcName, varCount, funcLoc); // write function declaration with number of local variables and location in code for function start
 
         // subroutine body parsing - not seperate function bc single use and not too long
         tokens.remove(0); // {
+        int numVarDec = 0;
         while (tokens.get(0).equals("var")) {
-            compileVarDec();
+            numVarDec += compileVarDec();
         }
+
+        VMWriter.writeFunction(className + "." + funcName, numVarDec); // write function declaration with number of local variables
+
+        if (isMethod) { // put the obj the method is being called on into pointer 0 (this)
+            VMWriter.writePush(Segment.ARG, 0);
+            VMWriter.writePop(Segment.POINTER, 0);
+        } else if (isConstructor) { // allocate memory for new object and set this to the new object
+            VMWriter.writePush(Segment.CONST, Symbols.fieldCount);
+            VMWriter.writeCall("Memory.alloc", 1);
+            VMWriter.writePop(Segment.POINTER, 0);
+        }
+
         compileStatements();
         tokens.remove(0); // }
+
+        System.out.println("compile subroutine dec end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static int compileParameterList(boolean isMethod) {
+
+        System.out.println("compile parameter list");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
 
         if (isMethod) { // if method, add this as first argument
             Symbols.add(Kind.ARG, className, "this");
@@ -286,11 +382,20 @@ public class JackCompiler {
                 break;
             }
         }
+
+        System.out.println("compile parameter list end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
         return paramCount;
     }
 
     public static int compileExpressionList() throws Exception {
 
+        System.out.println("compile expression list");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+        
         int argCount = 0;
 
         if (tokens.get(0).equals(")")) { // if empty return empty array
@@ -307,47 +412,65 @@ public class JackCompiler {
             }
         }
 
+        System.out.println("compile expression list end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
         return argCount;
     }
 
     public static void compileExpression() throws Exception {
-        
+
+        System.out.println("compile expression");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
+        compileTerm();
+
         while (true) { // add term, if there's an operator add it and then the next term until there's no more
-            compileTerm();
             if (tokens.size() > 0 && Compiler.contains(opSymbols, tokens.get(0))) {
-                if (tokens.get(0).equals("*")) {
+                String op = tokens.remove(0); // operator
+                compileTerm();
+                if (op.equals("*")) {
                     VMWriter.writeCall("Math.multiply", 2);
-                } else if (tokens.get(0).equals("/")) {
+                } else if (op.equals("/")) {
                     VMWriter.writeCall("Math.divide", 2);
                 } else {
-                    Command command = opSymbolToCommand.get(tokens.get(0));
+                    Command command = opSymbolToCommand.get(op);
                     VMWriter.writeArithmetic(command);
                 }
-                tokens.remove(0); // operator
             } else {
                 break;
             }
         }
+
+        System.out.println("compile expression end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileTerm() throws Exception {
-        
+
+        System.out.println("compile term");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
+
         if (tokens.get(0).equals("(")) {
             tokens.remove(0); // (
             compileExpression(); // expression in parentheses
             tokens.remove(0); // )
 
         } else if (Compiler.contains(unaryOpSymbols, tokens.get(0))) {
-            tokens.remove(0); // unary operator
+            String unaryOp = tokens.remove(0); // unary operator
             compileTerm(); // term after unary operator
-            VMWriter.writeArithmetic(tokens.get(0).equals("-") ? Command.NEG : Command.NOT); // write unary command
+            VMWriter.writeArithmetic(unaryOp.equals("-") ? Command.NEG : Command.NOT); // write unary command
 
         } else {
             String identifierName = "";
+            JackVariable var = null;
 
             if (tokens.get(0).matches("\\d+")) { // int
-                VMWriter.writePush(Segment.CONST, Integer.parseInt(tokens.remove(0))); // push int to stack
-                tokens.remove(0);
+                VMWriter.writePush(Segment.CONST, Integer.parseInt(tokens.get(0))); // push int to stack
 
             } else if (tokens.get(0).startsWith("__STRING")) {
                 String strValue = fileStrings.get(Integer.parseInt(tokens.get(0).substring(8, tokens.get(0).length() - 2))); // get number out of ___STRING#___ str & get corresponding string from array
@@ -357,31 +480,28 @@ public class JackCompiler {
                     VMWriter.writePush(Segment.CONST, (int) c); 
                     VMWriter.writeCall("String.appendChar", 2);
                 }
-                tokens.remove(0);
 
             } else if (tokens.get(0).equals("true")) {
                 VMWriter.writePush(Segment.CONST, 0); // push 0 for false
                 VMWriter.writeArithmetic(Command.NOT); // negate to get true
-                tokens.remove(0);
 
             } else if (tokens.get(0).equals("false") || tokens.get(0).equals("null")) {
                 VMWriter.writePush(Segment.CONST, 0); // push 0 for false or null
-                tokens.remove(0);
 
             } else if (tokens.get(0).equals("this")) {
                 VMWriter.writePush(Segment.POINTER, 0); // push this
-                tokens.remove(0);
                 
             } else {
                 identifierName = tokens.get(0); // var name or subroutine name
-                JackVariable var = Symbols.get(identifierName);
+                var = Symbols.get(identifierName);
                 if (var != null) {
                     VMWriter.writePushVar(var); // push variable value to stack
-                    tokens.remove(0);
-                } 
+                }
             }
 
-            if (tokens.size() > 0 && tokens.get(0).equals("[")) {
+            tokens.remove(0);
+
+            if (tokens.get(0).equals("[")) {
                 tokens.remove(0); // [
                 compileExpression(); // expression in array index
                 tokens.remove(0); // ]
@@ -389,21 +509,30 @@ public class JackCompiler {
                 VMWriter.writePop(Segment.POINTER, 1); // set THAT pointer to address of array element
                 VMWriter.writePush(Segment.THAT, 0); // push array element value to stack
 
-            } else if (tokens.size() > 0 && tokens.get(0).equals("(")) {
+            } else if (tokens.get(0).equals("(")) {
                 tokens.remove(0); // (
-                compileExpressionList();
+                VMWriter.writePush(Segment.POINTER, 0); // method call - push this as first argument
+                int numArgs = compileExpressionList();
                 tokens.remove(0); // )
-                VMWriter.writeCall(className + "." + identifierName, 0); // method call on current class
+                VMWriter.writeCall(className + "." + identifierName, numArgs + 1); // method call on current class
 
-            } else if (tokens.size() > 1 && tokens.get(0).equals(".")) {
+            } else if (tokens.get(0).equals(".")) {
                 tokens.remove(0); // .
-                tokens.remove(0); // subroutine name
+                String subroutineName = tokens.remove(0); // subroutine name
                 tokens.remove(0); // (
-                compileExpressionList(); // expression list in subroutine call
+                int numArgs = compileExpressionList(); // expression list in subroutine call
                 tokens.remove(0); // )
-                VMWriter.writeCall(identifierName, 0); // subroutine call
+                if (var != null) {
+                    VMWriter.writeCall(var.type + "." + subroutineName, numArgs + 1); // method call on var type b/c in the code it's on a var, add 1 to num args for object being passed as arg
+                } else {
+                    VMWriter.writeCall(identifierName + "." + subroutineName, numArgs); // function call
+                }
             }
         }
+
+        System.out.println("compile term end");
+        System.out.println(tokens);
+        System.out.println(VMWriter.vmCode);
     }
 }
 
@@ -458,22 +587,29 @@ class Symbols {
         argCount = 0;
         varCount = 0;
     }
+
+    public static void reset() {
+        classSymbols = new HashMap<String, JackVariable>();
+        staticCount = 0;
+        fieldCount = 0;
+        resetSubroutine();
+    }
 }
 
 class VMWriter {
     public static ArrayList<String> vmCode = new ArrayList<String>();
 
     public static void writePush(Segment segment, int index) {
-        vmCode.add("push " + segment.toString().toLowerCase() + " " + index);
+        vmCode.add("push " + segment.toString() + " " + index);
     }
     public static void writePushVar(JackVariable var) {
-        vmCode.add("push " + var.getSegment().toString().toLowerCase() + " " + var.index);
+        vmCode.add("push " + var.getSegment().toString() + " " + var.index);
     }
     public static void writePop(Segment segment, int index) {
-        vmCode.add("pop " + segment.toString().toLowerCase() + " " + index);
+        vmCode.add("pop " + segment.toString() + " " + index);
     }
     public static void writePopVar(JackVariable var) {
-        vmCode.add("pop " + var.getSegment().toString().toLowerCase() + " " + var.index);
+        vmCode.add("pop " + var.getSegment().toString() + " " + var.index);
     }
     public static void writeArithmetic(Command command) {
         vmCode.add(command.toString().toLowerCase());
@@ -490,7 +626,7 @@ class VMWriter {
     public static void writeCall(String funcName, int argCount) {
         vmCode.add("call " + funcName + " " + argCount);
     }
-    public static void writeFunction(String funcName, int varCount, int codeLocation) {
+    public static void writeFunction(String funcName, int varCount) {
         vmCode.add("function " + funcName + " " + varCount);
     }
     public static void writeReturn() {
@@ -504,7 +640,24 @@ class VMWriter {
 
 enum Kind { STATIC, FIELD, ARG, VAR }
 
-enum Segment { CONST, ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP }
+enum Segment { 
+    CONST, ARG, LOCAL, STATIC, THIS, THAT, POINTER, TEMP;
+
+    public String toString() {
+        switch (this) {
+            case CONST: return "constant";
+            case ARG: return "argument";
+            case LOCAL: return "local";
+            case STATIC: return "static";
+            case THIS: return "this";
+            case THAT: return "that";
+            case POINTER: return "pointer";
+            case TEMP: return "temp";
+            default: return "";
+        }
+    }
+
+}
 
 enum Command { ADD, SUB, NEG, EQ, GT, LT, AND, OR, NOT }
 
