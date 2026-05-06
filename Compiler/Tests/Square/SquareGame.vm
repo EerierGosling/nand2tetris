@@ -1,0 +1,168 @@
+function SquareGame.new 0
+push constant 2
+call Memory.alloc 1
+pop pointer 0
+push constant 0
+push constant 0
+push constant 30
+call Square.new 3
+pop this 0
+push constant 0
+pop this 1
+push pointer 0
+return
+function SquareGame.dispose 0
+push argument 0
+pop pointer 0
+push this 0
+call Square.dispose 1
+pop temp 0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function SquareGame.moveSquare 0
+push argument 0
+pop pointer 0
+push this 1
+push constant 1
+eq
+not
+if-goto JUMP16
+push this 0
+call Square.moveUp 1
+pop temp 0
+label JUMP16
+push this 1
+push constant 2
+eq
+not
+if-goto JUMP17
+push this 0
+call Square.moveDown 1
+pop temp 0
+label JUMP17
+push this 1
+push constant 3
+eq
+not
+if-goto JUMP18
+push this 0
+call Square.moveLeft 1
+pop temp 0
+label JUMP18
+push this 1
+push constant 4
+eq
+not
+if-goto JUMP19
+push this 0
+call Square.moveRight 1
+pop temp 0
+label JUMP19
+push constant 5
+call Sys.wait 1
+pop temp 0
+push constant 0
+return
+function SquareGame.run 2
+push argument 0
+pop pointer 0
+push constant 0
+pop local 1
+label JUMP20
+push local 1
+not
+not
+if-goto JUMP21
+label JUMP22
+push local 0
+push constant 0
+eq
+not
+if-goto JUMP23
+call Keyboard.keyPressed 0
+pop local 0
+push pointer 0
+call SquareGame.moveSquare 1
+pop temp 0
+goto JUMP22
+label JUMP23
+push local 0
+push constant 81
+eq
+not
+if-goto JUMP24
+push constant 0
+not
+pop local 1
+label JUMP24
+push local 0
+push constant 90
+eq
+not
+if-goto JUMP25
+push this 0
+call Square.decSize 1
+pop temp 0
+label JUMP25
+push local 0
+push constant 88
+eq
+not
+if-goto JUMP26
+push this 0
+call Square.incSize 1
+pop temp 0
+label JUMP26
+push local 0
+push constant 131
+eq
+not
+if-goto JUMP27
+push constant 1
+pop this 1
+label JUMP27
+push local 0
+push constant 133
+eq
+not
+if-goto JUMP28
+push constant 2
+pop this 1
+label JUMP28
+push local 0
+push constant 130
+eq
+not
+if-goto JUMP29
+push constant 3
+pop this 1
+label JUMP29
+push local 0
+push constant 132
+eq
+not
+if-goto JUMP30
+push constant 4
+pop this 1
+label JUMP30
+label JUMP31
+push local 0
+push constant 0
+eq
+not
+not
+if-goto JUMP32
+call Keyboard.keyPressed 0
+pop local 0
+push pointer 0
+call SquareGame.moveSquare 1
+pop temp 0
+goto JUMP31
+label JUMP32
+goto JUMP20
+label JUMP21
+push constant 0
+return

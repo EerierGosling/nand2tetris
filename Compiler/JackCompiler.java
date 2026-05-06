@@ -55,8 +55,6 @@ public class JackCompiler {
             }
         }
 
-        System.out.println(tokens);
-
         String vmCode;
 
         if (tokens.size() == 0) {
@@ -71,10 +69,6 @@ public class JackCompiler {
     }
 
     public static String compileClass() throws Exception { // compile a class
-
-        System.out.println("compile class");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // remove class keyword
         className = tokens.remove(0);
@@ -91,18 +85,10 @@ public class JackCompiler {
 
         VMWriter.reset();
 
-        System.out.println("compile class end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
-
         return vmCode;
     }
 
     public static int compileVarDec() {
-
-        System.out.println("compile vardec");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         Kind varCategory = JackVariable.toKind(tokens.remove(0)); // field/static/var keyword
         String varType = tokens.remove(0); // variable type
@@ -112,24 +98,16 @@ public class JackCompiler {
         int numVars = 1;
         while (tokens.get(0).equals(",")) {
             tokens.remove(0); // remove ,
-            Symbols.add(varCategory, varType, tokens.remove(0)); // add next var to subroutine symbol table
+            Symbols.add(varCategory, varType, tokens.remove(0)); // add next var to its symbol table
             numVars++;
         }
 
         tokens.remove(0); // remove ;
 
-        System.out.println("compile vardec end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
-
         return numVars;
     }
 
     public static void compileStatements() throws Exception {
-
-        System.out.println("compile statements");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         if (tokens.size() == 0) {
             return;
@@ -152,16 +130,9 @@ public class JackCompiler {
             }
         }
 
-        System.out.println("compile statements end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileLetStatement() throws Exception {
-
-        System.out.println("compile let statement");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // let
         JackVariable var = Symbols.get(tokens.remove(0)); // var name
@@ -185,16 +156,9 @@ public class JackCompiler {
             VMWriter.writePopVar(var); // pop new value to variable
         }
 
-        System.out.println("compile let statement end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileDoStatement() throws Exception {
-
-        System.out.println("compile do statement");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // do
         String baseName = tokens.remove(0); // subroutine name or class/var name
@@ -223,16 +187,9 @@ public class JackCompiler {
         VMWriter.writeCall(baseName, numArgs);
         VMWriter.writePop(Segment.TEMP, 0); // pop return value off the stack (not used)
 
-        System.out.println("compile do statement end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileIfStatement() throws Exception {
-
-        System.out.println("compile if statement");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // if
         tokens.remove(0); // (
@@ -261,17 +218,9 @@ public class JackCompiler {
         } else {
             VMWriter.writeLabel(jump1); // if no else, add label for end of if statement
         }
-
-        System.out.println("compile if statement end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileWhileStatement() throws Exception {
-
-        System.out.println("compile while statement");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         String startLabel = "JUMP" + jumpCounter++;
         String endLabel = "JUMP" + jumpCounter++;
@@ -289,16 +238,9 @@ public class JackCompiler {
         VMWriter.writeGoto(startLabel); // go to start to check condition again
         VMWriter.writeLabel(endLabel); // end of while loop
 
-        System.out.println("compile while statement end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileReturnStatement() throws Exception {
-
-        System.out.println("compile return statement");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         tokens.remove(0); // return
         if (!tokens.get(0).equals(";")) {
@@ -309,16 +251,9 @@ public class JackCompiler {
         tokens.remove(0); // ;
         VMWriter.writeReturn();
 
-        System.out.println("compile return statement end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileSubroutineDec() throws Exception {
-
-        System.out.println("compile subroutine dec");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         Symbols.resetSubroutine();
 
@@ -353,16 +288,9 @@ public class JackCompiler {
         compileStatements();
         tokens.remove(0); // }
 
-        System.out.println("compile subroutine dec end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static int compileParameterList(boolean isMethod) {
-
-        System.out.println("compile parameter list");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         if (isMethod) { // if method, add this as first argument
             Symbols.add(Kind.ARG, className, "this");
@@ -383,18 +311,10 @@ public class JackCompiler {
             }
         }
 
-        System.out.println("compile parameter list end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
-
         return paramCount;
     }
 
     public static int compileExpressionList() throws Exception {
-
-        System.out.println("compile expression list");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
         
         int argCount = 0;
 
@@ -412,18 +332,10 @@ public class JackCompiler {
             }
         }
 
-        System.out.println("compile expression list end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
-
         return argCount;
     }
 
     public static void compileExpression() throws Exception {
-
-        System.out.println("compile expression");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         compileTerm();
 
@@ -443,17 +355,9 @@ public class JackCompiler {
                 break;
             }
         }
-
-        System.out.println("compile expression end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 
     public static void compileTerm() throws Exception {
-
-        System.out.println("compile term");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
 
         if (tokens.get(0).equals("(")) {
             tokens.remove(0); // (
@@ -482,7 +386,7 @@ public class JackCompiler {
                 }
 
             } else if (tokens.get(0).equals("true")) {
-                VMWriter.writePush(Segment.CONST, 0); // push 0 for false
+                VMWriter.writePush(Segment.CONST, 0); // push 0
                 VMWriter.writeArithmetic(Command.NOT); // negate to get true
 
             } else if (tokens.get(0).equals("false") || tokens.get(0).equals("null")) {
@@ -529,10 +433,6 @@ public class JackCompiler {
                 }
             }
         }
-
-        System.out.println("compile term end");
-        System.out.println(tokens);
-        System.out.println(VMWriter.vmCode);
     }
 }
 
