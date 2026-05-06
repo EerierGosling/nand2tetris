@@ -9,21 +9,43 @@
  */ 
 class Memory {
 
+    static Array ram;
+    static Array heap;
+    static int freeList;
+
     /** Initializes the class. */
     function void init() {
+        let ram = 0;
+        let heap = 2048; // base of heap
+        let freeList = heap;
+        let heap[0] = 0; // no next block
+        let heap[1] = 14334; // length of heap
     }
 
     /** Returns the RAM value at the given address. */
     function int peek(int address) {
+        return ram[address];
     }
 
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
+        let ram[address] = value;
     }
 
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
+        var int currentBase, nextBase, currentSize, firstBadFitBase, firstBadFitPrevBase;
+        let currentBase = freeList;
+        let nextBase = heap[currentBase];
+        let currentSize = heap[currentBase + 1];
+        while (currentSize < size) {
+            let currentBase = nextBase;
+            let nextBase = heap[currentBase];
+            let currentSize = heap[currentBase + 1];
+        }
+        let freeList = nextBase;
+        return currentBase;
     }
 
     /** De-allocates the given object (cast as an array) by making

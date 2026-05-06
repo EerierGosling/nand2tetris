@@ -7,7 +7,7 @@ public class Compiler {
 
     public static Scanner sc = new Scanner(System.in);
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception { // i've only tested this on jack to vm! it theoretically works on everything else, but it does what it's supposed to for this lab
         System.out.println("");
         System.out.println("what file type is your input? \u001B[38;2;140;140;140m(enter the number)\u001B[0m");
         System.out.println("  \u001B[38;2;140;140;140m1.\u001B[0m .asm");

@@ -15,6 +15,14 @@ class Math {
 
     // Initializes the Math library.
     function void init() {
+        let n = 16;
+        let powersOfTwo = Array.new(n);
+        let i = 1;
+        let powersOfTwo[0] = 1;
+        while (i < n) {
+            let powersOfTwo[i] = powersOfTwo[i-1] + powersOfTwo[i-1];
+            let i = i + 1;
+        }
     }
 
     /** Returns the product of x and y. 
@@ -22,6 +30,18 @@ class Math {
      *  in an expression, it handles it by invoking this method. 
      *  Thus, in Jack, x * y and Math.multiply(x,y) return the same value. */
     function int multiply(int x, int y) {
+        var int sum, shiftedX, i;
+        let sum = 0;
+        let shiftedX = x;
+        let i = 0;
+        while (i < n) {
+            if (y & powersOfTwo[i]) {
+                let sum = sum + shiftedX;
+            }
+            let shiftedX = shiftedX + shiftedX;
+            let i = i + 1;
+        }
+        return sum;
     }
 
     /** Returns the integer part of x / y.
@@ -29,21 +49,66 @@ class Math {
      *  an an expression, it handles it by invoking this method.
      *  Thus, x/y and Math.divide(x,y) return the same value. */
     function int divide(int x, int y) {
+        var int q, xAbs, yAbs, sign;
+
+        let xAbs = abs(x);
+        let yAbs = abs(y);
+        let sign = (x/xAbs) * (y/yAbs);
+
+        if (yAbs > xAbs) { // todo: confused on what im supposed to change this to
+            return 0;
+        }
+
+        let q = divide(xAbs, (yAbs + yAbs));
+
+        if ((xAbs - (2 * q * yAbs) < yAbs)) {
+            return sign * (q+q);
+        } else {
+            return sign * (q+q+1);
+        }
     }
 
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
+        var int y, j, cond;
+        let y = 0;
+        let j = n/2 - 1;
+        while (j > -1) {
+            let cond = y+powersOfTwo[j];
+            let cond = cond * cond;
+            if (cond < x+1 & cond > 0) {
+                let y = y + powersOfTwo[j];
+            }
+            let j = j - 1;
+        }
+
+        return y;
     }
 
     /** Returns the greater value. */
     function int max(int a, int b) {
+        if (a > b) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     /** Returns the smaller value. */
     function int min(int a, int b) {
+        if (a < b) {
+            return a;
+        } else {
+            return b;
+        }
     }
 
     /** Returns the absolute value of x. */
     function int abs(int x) {
+        if (x < 0) {
+            return -x;
+        } else {
+            return x;
+        }
     }
 }
