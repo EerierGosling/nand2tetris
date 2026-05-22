@@ -117,4 +117,16 @@ class Math {
             return x;
         }
     }
+
+    function int powerOfTwo(int i) {
+        return powersOfTwo[i];
+    }
+
+    function int modulo(int a, int b) {
+        return a - (b * (a / b));
+    }
+
+    function int getBit(int word, int index) {
+        return (word & powersOfTwo[index]) / powersOfTwo[index];
+    }
 }

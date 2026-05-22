@@ -37,32 +37,132 @@ class Screen {
 
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
-        var int address, value;
+        var int address, value, digit, currentValue;
 
         let address = 32*y + x/16;
         let value = Memory.peek(16384 + address);
+        let digit = 15 - Math.modulo(x, 16);
+        let currentValue = Math.getBit(value, digit);
 
-        if (currentColor) {
-            
+        if ((currentValue = 0) = currentColor) { // if color is already correct
+            return;
         }
-        else {
 
+        if (currentColor) { // if black
+            do Memory.poke(16384 + address, value + Math.powerOfTwo(digit)); // set bit to 1
+        } else { // if white
+            do Memory.poke(16384 + address, value - Math.powerOfTwo(digit)); // set bit to 0
         }
-
-        do Memory.poke(
-
     }
 
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
+        var int a, b, diff, dx, dy, dySign;
+
+        if (x1 = x2) { // if vertical line
+            if (y1 > y2) { // flip ys if y2 is smaller than y1
+                let a = y1;
+                let y1 = y2;
+                let y2 = a;
+            }
+
+            let a = y1;
+            while (a < y2) {
+                do Screen.drawPixel(x1, a);
+                let a = a + 1;
+            }
+
+            return;
+        }
+
+        if (y1 = y2) { // if horizontal line
+            if (x1 > x2) { // flip xs if x2 is smaller than x1
+                let a = x1;
+                let x1 = x2;
+                let x2 = a;
+            }
+
+            let a = x1;
+            while (a < x2) {
+                do Screen.drawPixel(a, y1);
+                let a = a + 1;
+            }
+
+            return;
+        }
+
+        if (x1 > x2) { // flip points if x2 is smaller than x1
+            let a = x1;
+            let x1 = x2;
+            let x2 = a;
+
+            let a = y1;
+            let y1 = y2;
+            let y2 = a;
+        }
+
+        let dx = x1 - x2; // always non neg
+        let dy = y1 - y2;
+        let dySign = 1;
+        if (dy < 0) {
+            let dySign = -1;
+            let dy = -dy; // always non neg
+        }
+
+        // doesn't handle lines that dont go up and to the right
+        let a = 0;
+        let b = 0;
+        let diff = 0;
+
+        while ((a < dx) & (b < dy)) {
+            do drawPixel(x1 + a, y1 + (b * yDir));
+            if (diff < 0) {
+                let a = a + 1;
+                let diff = diff + dy;
+            } else {
+                let b = b + 1;
+                let diff = diff - dx;
+            }
+        }
     }
 
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      *  and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
+        var int i, j;
+
+        if (x1 > x2) { // flip xs if x2 is smaller than x1
+            let i = x1;
+            let x1 = x2;
+            let x2 = i;
+        }
+        if (y1 > y2) { // flip ys if y2 is smaller than y1
+            let i = y1;
+            let y1 = y2;
+            let y2 = i;
+        }
+
+        let i = x1;
+        while (i < x2) {
+            let j = y1;
+            while (j < y2) {
+                do Screen.drawPixel(i, j);
+                let j = j + 1;
+            }
+            let i = i + 1;
+        }
     }
 
     /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
     function void drawCircle(int x, int y, int r) {
+        var int dy;
+        if (r > 181) {
+            return; // radius too big
+        }
+        let dy = -r;
+        while (dy < r+1) {
+            do drawLine(x - Math.sqrt(r*r - dy*dy), y + dy, x + Math.sqrt(r*r - dy*dy), y + dy);
+            let dy = dy + 1;
+        }
     }
 }
