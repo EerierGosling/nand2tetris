@@ -15,6 +15,7 @@ class Math {
 
     // Initializes the Math library.
     function void init() {
+        var int i;
         let n = 16;
         let powersOfTwo = Array.new(n);
         let i = 1;
@@ -51,6 +52,10 @@ class Math {
     function int divide(int x, int y) {
         var int xAbs, yAbs, sign;
 
+        if (x=0) {
+            return 0;
+        }
+
         let xAbs = abs(x);
         let yAbs = abs(y);
         let sign = (x/xAbs) * (y/yAbs);
@@ -67,7 +72,7 @@ class Math {
 
         let q = divideInternal(x, (y + y));
 
-        if ((x - (2 * q * y) < y)) {
+        if ((x - (2 * q * y)) < y) {
             return q+q;
         } else {
             return q+q+1;
@@ -82,7 +87,7 @@ class Math {
         while (j > -1) {
             let cond = y+powersOfTwo[j];
             let cond = cond * cond;
-            if (cond < x+1 & cond > 0) {
+            if ((cond < (x + 1)) & (cond > 0)) {
                 let y = y + powersOfTwo[j];
             }
             let j = j - 1;
