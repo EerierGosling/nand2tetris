@@ -49,22 +49,28 @@ class Math {
      *  an an expression, it handles it by invoking this method.
      *  Thus, x/y and Math.divide(x,y) return the same value. */
     function int divide(int x, int y) {
-        var int q, xAbs, yAbs, sign;
+        var int xAbs, yAbs, sign;
 
         let xAbs = abs(x);
         let yAbs = abs(y);
         let sign = (x/xAbs) * (y/yAbs);
+        
+        return sign * divideInternal(xAbs, yAbs);
+    }
 
-        if (yAbs > xAbs) { // todo: confused on what im supposed to change this to
+    function int divideInternal(int x, int y) {
+        var int q;
+
+        if ((y > x) | (y < 0)) {
             return 0;
         }
 
-        let q = divide(xAbs, (yAbs + yAbs));
+        let q = divideInternal(x, (y + y));
 
-        if ((xAbs - (2 * q * yAbs) < yAbs)) {
-            return sign * (q+q);
+        if ((x - (2 * q * y) < y)) {
+            return q+q;
         } else {
-            return sign * (q+q+1);
+            return q+q+1;
         }
     }
 

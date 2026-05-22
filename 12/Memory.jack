@@ -35,21 +35,87 @@ class Memory {
     /** Finds an available RAM block of the given size and returns
      *  a reference to its base address. */
     function int alloc(int size) {
-        var int currentBase, nextBase, currentSize, firstBadFitBase, firstBadFitPrevBase;
+        var int prevBase, currentBase, currentSize, nextBase;
+        var boolean foundMatch;
+
+        let size = size + 1; // to add the block size before the data
+
         let currentBase = freeList;
-        let nextBase = heap[currentBase];
         let currentSize = heap[currentBase + 1];
-        while (currentSize < size) {
-            let currentBase = nextBase;
-            let nextBase = heap[currentBase];
-            let currentSize = heap[currentBase + 1];
+
+        while (~(heap[currentBase] = 0) & (~foundMatch)) {
+            
+            // if (perfect fit and not first block) or fits with at least 2 words to spare
+            if (((currentSize = size) & (currentBase = freeList)) | (currentSize > (size + 1))) {
+                let foundMatch = true;
+            } else {
+                let prevBase = currentBase;
+                let currentBase = heap[currentBase];
+                let currentSize = heap[currentBase + 1];
+            }
         }
-        let freeList = nextBase;
-        return currentBase;
+
+        if (~foundMatch) {
+            do Sys.error(6); // memory overflow
+        }
+        
+        if (currentSize = size) { // if perfect fit
+            let nextBase = heap[currentBase]; // remove this block from linked list
+            let heap[prevBase] = nextBase;
+            let heap[currentBase] = size - 1; // save the block size
+
+            return currentBase + 1; // return this block
+        }
+
+        let heap[currentBase + 1] = heap[currentBase + 1] - size;
+        let heap[currentBase + currentSize - size] = size - 1; // save the block size
+        return currentBase + currentSize - size + 1;
     }
 
     /** De-allocates the given object (cast as an array) by making
      *  it available for future allocations. */
     function void deAlloc(Array o) {
+        var int prevBase, nextBase;
+        var boolean lastBlock, nextToPrev, nextToNext;
+
+        let nextBase = freeList;
+
+        while ((nextBase < o) & (~lastBlock)) {
+            let prevBase = nextBase;
+            let nextBase = heap[nextBase];
+            if (nextBase = 0) {
+                let lastBlock = true;
+            }
+        }
+
+        let nextToPrev = (prevBase + heap[prevBase + 1] = o);
+        let nextToNext = (o + heap[o - 1] = nextBase);
+
+        if (lastBlock) {
+            if (nextToPrev) { // if this block is next to the last block in the linked list
+                let heap[prevBase + 1] = heap[prevBase + 1] + heap[o - 1] + 1; // merge the two blocks
+            } else {
+                let heap[prevBase] = o - 1; // add this block to end of linked list
+                let heap[o] = heap[o - 1]; // move size up a word
+                let heap[o - 1] = 0; // set next to none
+            }
+        } else {
+            if (nextToPrev & nextToNext) {
+                let heap[prevBase] = heap[nextBase];
+                let heap[prevBase + 1] = nextBase - prevBase + heap[nextBase + 1];
+            }
+            if (nextToPrev & ~nextToNext) {
+                let heap[prevBase + 1] = heap[prevBase + 1] + heap[o - 1] + 1;
+            }
+            if (~nextToPrev & nextToNext) { 
+                let heap[o] = heap[nextBase + 1] + heap[o - 1] + 1;
+                let heap[o - 1] = heap[nextBase];
+            }
+            if (~nextToPrev & ~nextToNext) {
+                let heap[o] = heap[o - 1] + 1;
+                let heap[prevBase] = o - 1; // add this block to linked list
+                let heap[o - 1] = nextBase; // point to next block in linked list
+            }
+        }
     }    
 }
