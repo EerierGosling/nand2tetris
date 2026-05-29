@@ -30,7 +30,7 @@ class Sys {
         var int i;
         while (duration > 0) {
             let i = 0;
-            while (i < 50) { // change 50 to be a number that makes it wait around a millisecond
+            while (i < 80) { // change 80 to be a number that makes it wait around a millisecond (works on my machine™)
                 let i = i + 1;
             }
             let duration = duration - 1;
