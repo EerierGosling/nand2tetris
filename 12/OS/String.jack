@@ -19,12 +19,14 @@ class String {
     constructor String new(int maxLength) {
         let chars = Array.new(maxLength);
         let len = 0;
+        return this;
     }
 
     /** Disposes this string. */
     method void dispose() {
         do chars.dispose();
-        let len = 0;
+        do Memory.deAlloc(this);
+        return;
     }
 
     /** Returns the current length of this string. */
@@ -40,6 +42,7 @@ class String {
     /** Sets the character at the j-th location of this string to c. */
     method void setCharAt(int j, char c) {
         let chars[j] = c;
+        return;
     }
 
     /** Appends c to this string's end and returns this string. */
@@ -52,6 +55,7 @@ class String {
     /** Erases the last character from this string. */
     method void eraseLastChar() {
         let len = len - 1;
+        return;
     }
 
     /** Returns the integer value of this string, 
@@ -59,38 +63,54 @@ class String {
     method int intValue() {
         var char currentChar;
         var int i, val;
-        var boolean going;
+        var boolean going, negative;
 
-        let currentChar = 0;
         let i = 0;
         let val = 0;
         let going = true;
+        let negative = false;
+
+        if ((len > 0) & (chars[0] = 45)) {
+            let negative = true;
+            let i = 1;
+        }
 
         while (going & (i < len)) {
             let currentChar = chars[i];
-            if (currentChar < 48 | currentChar > 57) {
+            if ((currentChar < 48) | (currentChar > 57)) {
                 let going = false;
             } else {
-                let i = i + 1;
                 let val = val * 10 + (currentChar - 48);
+                let i = i + 1;
             }
+        }
+
+        if (negative) {
+            return -val;
         }
         return val;
     }
 
     /** Sets this string to hold a representation of the given value. */
     method void setInt(int val) {
-        var int digitIndex, digit, i;
-        
-        let i = 0;
-        let digitIndex = 1;
-        let digit = Math.modulo(i, digit);
-
-        while (i/digitIndex > 0) {
-            do appendChar(digit + 48);
-            let i = i + 1;
+        let len = 0;  // clear the string
+        if (val < 0) {
+            do appendChar(45);  // '-'
+            do setIntHelper(-val);
+        } else {
+            do setIntHelper(val);
         }
+        return;
     }
+
+    method void setIntHelper(int val) {
+        if (val > 9) {
+            do setIntHelper(val / 10);
+        }
+        do appendChar(Math.modulo(val, 10) + 48);
+        return;
+    }
+
 
     /** Returns the new line character. */
     function char newLine() {

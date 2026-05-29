@@ -9,7 +9,8 @@ class Keyboard {
 
     /** Initializes the keyboard. */
     function void init() {
-    } 
+        return;
+    }
 
     /**
      * Returns the character of the currently pressed key on the keyboard;
@@ -43,12 +44,14 @@ class Keyboard {
         let key = 0;
 
         while (key = 0) {
-            let key = keyPressed();
+            let key = Keyboard.keyPressed();
         }
 
-        while (~(keyPressed = 0)) {}
+        while (~(Keyboard.keyPressed() = 0)) {}
 
-        do Output.printChar(key);
+        if ((key > 31) & (key < 127)) {
+            do Output.printChar(key);
+        }
 
         return key;
     }
@@ -63,21 +66,23 @@ class Keyboard {
         do Output.printString(message);
 
         let c = 0;
-        let str = "";
+        let str = String.new(1472); // max chars on screen
 
         while (true) {
-            let c = readChar();
+            let c = Keyboard.readChar();
             if (c = 128) {
                 do Output.println();
                 return str;
             }
             if (c = 129) {
-                do Output.backSpace();
-                do str.eraseLastChar();
-            }
-            if (c > 129 | c < 128) {
-                do Output.printChar(c);
-                do str.appendChar(c);
+                if (str.length() > 0) {
+                    do Output.backSpace();
+                    do str.eraseLastChar();
+                }
+            } else {
+                if (~(c = 128)) {
+                    do str.appendChar(c);
+                }
             }
         }
         return str;
@@ -89,8 +94,8 @@ class Keyboard {
      *  entered text is detected). Also handles user backspaces. */
     function int readInt(String message) {
         var String intStr;
-        
-        let intStr = readLine("");
+
+        let intStr = Keyboard.readLine(message);
         return intStr.intValue();
     }
 }

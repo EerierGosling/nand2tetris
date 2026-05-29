@@ -24,6 +24,7 @@ class Math {
             let powersOfTwo[i] = powersOfTwo[i-1] + powersOfTwo[i-1];
             let i = i + 1;
         }
+        return;
     }
 
     /** Returns the product of x and y. 
@@ -56,11 +57,14 @@ class Math {
             return 0;
         }
 
-        let xAbs = abs(x);
-        let yAbs = abs(y);
-        let sign = (x/xAbs) * (y/yAbs);
-        
-        return sign * divideInternal(xAbs, yAbs);
+        let xAbs = Math.abs(x);
+        let yAbs = Math.abs(y);
+        let sign = 1;
+        if (((x < 0) & (y > 0)) | ((x > 0) & (y < 0))) {
+            let sign = -1;
+        }
+
+        return sign * Math.divideInternal(xAbs, yAbs);
     }
 
     function int divideInternal(int x, int y) {
@@ -70,7 +74,7 @@ class Math {
             return 0;
         }
 
-        let q = divideInternal(x, (y + y));
+        let q = Math.divideInternal(x, (y + y));
 
         if ((x - (2 * q * y)) < y) {
             return q+q;
@@ -87,7 +91,7 @@ class Math {
         while (j > -1) {
             let cond = y+powersOfTwo[j];
             let cond = cond * cond;
-            if ((cond < (x + 1)) & (cond > 0)) {
+            if ((~(cond > x)) & (cond > 0)) {
                 let y = y + powersOfTwo[j];
             }
             let j = j - 1;

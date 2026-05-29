@@ -20,6 +20,7 @@ class Memory {
         let freeList = heap;
         let heap[0] = 0; // no next block
         let heap[1] = 14334; // length of heap
+        return;
     }
 
     /** Returns the RAM value at the given address. */
@@ -30,6 +31,7 @@ class Memory {
     /** Sets the RAM value at the given address to the given value. */
     function void poke(int address, int value) {
         let ram[address] = value;
+        return;
     }
 
     /** Finds an available RAM block of the given size and returns
@@ -41,34 +43,35 @@ class Memory {
         let size = size + 1; // to add the block size before the data
 
         let currentBase = freeList;
-        let currentSize = heap[currentBase + 1];
+        let currentSize = ram[currentBase + 1];
 
-        while (~(heap[currentBase] = 0) & (~foundMatch)) {
-            
-            // if (perfect fit and not first block) or fits with at least 2 words to spare
-            if (((currentSize = size) & (currentBase = freeList)) | (currentSize > (size + 1))) {
+        while (~foundMatch) {
+            if ((currentSize = size) | (currentSize > (size + 1))) {
                 let foundMatch = true;
             } else {
+                if (ram[currentBase] = 0) {
+                    do Sys.error(6); // no block large enough
+                }
                 let prevBase = currentBase;
-                let currentBase = heap[currentBase];
-                let currentSize = heap[currentBase + 1];
+                let currentBase = ram[currentBase];
+                let currentSize = ram[currentBase + 1];
             }
         }
 
-        if (~foundMatch) {
-            do Sys.error(6); // memory overflow
+        if (currentSize = size) { // if perfect fit, remove block from free list
+            let nextBase = ram[currentBase];
+            if (prevBase = 0) {
+                let freeList = nextBase;
+            } else {
+                let ram[prevBase] = nextBase;
+            }
+            let ram[currentBase] = size - 1;
+            return currentBase + 1;
         }
-        
-        if (currentSize = size) { // if perfect fit
-            let nextBase = heap[currentBase]; // remove this block from linked list
-            let heap[prevBase] = nextBase;
-            let heap[currentBase] = size - 1; // save the block size
 
-            return currentBase + 1; // return this block
-        }
-
-        let heap[currentBase + 1] = heap[currentBase + 1] - size;
-        let heap[currentBase + currentSize - size] = size - 1; // save the block size
+        // carve from the back of the block
+        let ram[currentBase + 1] = ram[currentBase + 1] - size;
+        let ram[currentBase + currentSize - size] = size - 1;
         return currentBase + currentSize - size + 1;
     }
 
@@ -82,40 +85,41 @@ class Memory {
 
         while ((nextBase < o) & (~lastBlock)) {
             let prevBase = nextBase;
-            let nextBase = heap[nextBase];
+            let nextBase = ram[nextBase];
             if (nextBase = 0) {
                 let lastBlock = true;
             }
         }
 
-        let nextToPrev = (prevBase + heap[prevBase + 1] = o);
-        let nextToNext = (o + heap[o - 1] = nextBase);
+        let nextToPrev = (prevBase + ram[prevBase + 1] = o);
+        let nextToNext = (o + ram[o - 1] = nextBase);
 
         if (lastBlock) {
             if (nextToPrev) { // if this block is next to the last block in the linked list
-                let heap[prevBase + 1] = heap[prevBase + 1] + heap[o - 1] + 1; // merge the two blocks
+                let ram[prevBase + 1] = ram[prevBase + 1] + ram[o - 1] + 1; // merge the two blocks
             } else {
-                let heap[prevBase] = o - 1; // add this block to end of linked list
-                let heap[o] = heap[o - 1]; // move size up a word
-                let heap[o - 1] = 0; // set next to none
+                let ram[prevBase] = o - 1; // add this block to end of linked list
+                let ram[o] = ram[o - 1]; // move size up a word
+                let ram[o - 1] = 0; // set next to none
             }
         } else {
             if (nextToPrev & nextToNext) {
-                let heap[prevBase] = heap[nextBase];
-                let heap[prevBase + 1] = nextBase - prevBase + heap[nextBase + 1];
+                let ram[prevBase] = ram[nextBase];
+                let ram[prevBase + 1] = nextBase - prevBase + ram[nextBase + 1];
             }
             if (nextToPrev & ~nextToNext) {
-                let heap[prevBase + 1] = heap[prevBase + 1] + heap[o - 1] + 1;
+                let ram[prevBase + 1] = ram[prevBase + 1] + ram[o - 1] + 1;
             }
-            if (~nextToPrev & nextToNext) { 
-                let heap[o] = heap[nextBase + 1] + heap[o - 1] + 1;
-                let heap[o - 1] = heap[nextBase];
+            if (~nextToPrev & nextToNext) {
+                let ram[o] = ram[nextBase + 1] + ram[o - 1] + 1;
+                let ram[o - 1] = ram[nextBase];
             }
             if (~nextToPrev & ~nextToNext) {
-                let heap[o] = heap[o - 1] + 1;
-                let heap[prevBase] = o - 1; // add this block to linked list
-                let heap[o - 1] = nextBase; // point to next block in linked list
+                let ram[o] = ram[o - 1] + 1;
+                let ram[prevBase] = o - 1; // add this block to linked list
+                let ram[o - 1] = nextBase; // point to next block in linked list
             }
         }
+        return;
     }    
 }

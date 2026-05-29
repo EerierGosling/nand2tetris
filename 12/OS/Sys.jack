@@ -10,19 +10,19 @@ class Sys {
 
     /** Performs all the initializations required by the OS. */
     function void init() {
-        do Array.init();
-        do Keyboard.init();
-        do Math.init();
         do Memory.init();
-        do Output.init();
+        do Math.init();
         do Screen.init();
-        do String.init();
+        do Output.init();
         do Main.main();
+        do Sys.halt();
+        return;
     }
 
     /** Halts the program execution. */
     function void halt() {
         while (true) {}
+        return;
     }
 
     /** Waits approximately duration milliseconds and returns.  */
@@ -35,6 +35,7 @@ class Sys {
             }
             let duration = duration - 1;
         }
+        return;
     }
 
     /** Displays the given error code in the form "ERR<errorCode>",
@@ -43,5 +44,6 @@ class Sys {
         do Output.printString("ERR");
         do Output.printInt(errorCode);
         do Sys.halt();
+        return;
     }
 }
