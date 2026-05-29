@@ -62,6 +62,7 @@ class Screen {
     /** Draws a line from pixel (x1,y1) to pixel (x2,y2), using the current color. */
     function void drawLine(int x1, int y1, int x2, int y2) {
         var int a, b, diff, dx, dy, dySign;
+        var int addr, leftWord, rightWord, leftBit, rightBit, leftMask, rightMask, w;
 
         if (x1 = x2) { // if vertical line
             if (y1 > y2) { // flip ys if y2 is smaller than y1
@@ -71,7 +72,7 @@ class Screen {
             }
 
             let a = y1;
-            while (a < y2) {
+            while (~(a > y2)) {
                 do Screen.drawPixel(x1, a);
                 let a = a + 1;
             }
@@ -80,18 +81,51 @@ class Screen {
         }
 
         if (y1 = y2) { // if horizontal line
-            if (x1 > x2) { // flip xs if x2 is smaller than x1
+            if (x1 > x2) {
                 let a = x1;
                 let x1 = x2;
                 let x2 = a;
             }
 
-            let a = x1;
-            while (a < x2) {
-                do Screen.drawPixel(a, y1);
-                let a = a + 1;
+            let addr = 16384 + (32 * y1);
+            let leftWord = x1 / 16;
+            let rightWord = x2 / 16;
+            let leftBit = Math.modulo(x1, 16);
+            let rightBit = Math.modulo(x2, 16);
+
+            let leftMask = ~(Math.powerOfTwo(leftBit) - 1);
+            if (rightBit = 15) {
+                let rightMask = -1;
+            } else {
+                let rightMask = Math.powerOfTwo(rightBit + 1) - 1;
             }
 
+            if (leftWord = rightWord) {
+                let leftMask = leftMask & rightMask;
+                if (currentColor) {
+                    do Memory.poke(addr + leftWord, Memory.peek(addr + leftWord) | leftMask);
+                } else {
+                    do Memory.poke(addr + leftWord, Memory.peek(addr + leftWord) & (~leftMask));
+                }
+                return;
+            }
+
+            if (currentColor) {
+                do Memory.poke(addr + leftWord, Memory.peek(addr + leftWord) | leftMask);
+            } else {
+                do Memory.poke(addr + leftWord, Memory.peek(addr + leftWord) & (~leftMask));
+            }
+            let w = leftWord + 1;
+            while (w < rightWord) {
+                if (currentColor) { do Memory.poke(addr + w, -1); }
+                else              { do Memory.poke(addr + w, 0);  }
+                let w = w + 1;
+            }
+            if (currentColor) {
+                do Memory.poke(addr + rightWord, Memory.peek(addr + rightWord) | rightMask);
+            } else {
+                do Memory.poke(addr + rightWord, Memory.peek(addr + rightWord) & (~rightMask));
+            }
             return;
         }
 
@@ -135,25 +169,17 @@ class Screen {
     function void drawRectangle(int x1, int y1, int x2, int y2) {
         var int i, j;
 
-        if (x1 > x2) { // flip xs if x2 is smaller than x1
-            let i = x1;
-            let x1 = x2;
-            let x2 = i;
+        if (x1 > x2) {
+            let i = x1; let x1 = x2; let x2 = i;
         }
-        if (y1 > y2) { // flip ys if y2 is smaller than y1
-            let i = y1;
-            let y1 = y2;
-            let y2 = i;
+        if (y1 > y2) {
+            let i = y1; let y1 = y2; let y2 = i;
         }
 
-        let i = x1;
-        while (i < x2) {
-            let j = y1;
-            while (j < y2) {
-                do Screen.drawPixel(i, j);
-                let j = j + 1;
-            }
-            let i = i + 1;
+        let j = y1;
+        while (~(j > y2)) {
+            do Screen.drawLine(x1, j, x2, j);
+            let j = j + 1;
         }
         return;
     }
@@ -165,7 +191,7 @@ class Screen {
             return; // radius too big
         }
         let dy = -r;
-        while (dy < r+1) {
+        while (~(dy > r)) {
             do Screen.drawLine(x - Math.sqrt((r * r) - (dy * dy)), y + dy, x + Math.sqrt((r * r) - (dy * dy)), y + dy);
             let dy = dy + 1;
         }
