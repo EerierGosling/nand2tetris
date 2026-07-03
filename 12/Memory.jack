@@ -40,6 +40,10 @@ class Memory {
         var int prevBase, currentBase, currentSize, nextBase;
         var boolean foundMatch;
 
+        if (size < 1) {
+            do Sys.error(5);
+        }
+
         let size = size + 1; // to add the block size before the data
 
         let currentBase = freeList;

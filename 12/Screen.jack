@@ -41,6 +41,9 @@ class Screen {
     /** Draws the (x,y) pixel, using the current color. */
     function void drawPixel(int x, int y) {
         var int address, value, digit, currentValue;
+        if ((x < 0) | (x > 511) | (y < 0) | (y > 255)) {
+            do Sys.error(7);
+        }
 
         let address = (32 * y) + (x / 16);
         let value = Memory.peek(16384 + address);
@@ -63,6 +66,9 @@ class Screen {
     function void drawLine(int x1, int y1, int x2, int y2) {
         var int a, b, diff, dx, dy, dySign;
         var int addr, leftWord, rightWord, leftBit, rightBit, leftMask, rightMask, w;
+        if ((x1 < 0) | (x1 > 511) | (y1 < 0) | (y1 > 255) | (x2 < 0) | (x2 > 511) | (y2 < 0) | (y2 > 255)) {
+            do Sys.error(8);
+        }
 
         if (x1 = x2) { // if vertical line
             if (y1 > y2) { // flip ys if y2 is smaller than y1
@@ -167,13 +173,10 @@ class Screen {
     /** Draws a filled rectangle whose top left corner is (x1, y1)
      *  and bottom right corner is (x2,y2), using the current color. */
     function void drawRectangle(int x1, int y1, int x2, int y2) {
-        var int i, j;
+        var int j;
 
-        if (x1 > x2) {
-            let i = x1; let x1 = x2; let x2 = i;
-        }
-        if (y1 > y2) {
-            let i = y1; let y1 = y2; let y2 = i;
+        if ((x1 > x2) | (y1 > y2) | (x1 < 0) | (x2 > 511) | (y1 < 0) | (y2 > 255)) {
+            do Sys.error(9);
         }
 
         let j = y1;
@@ -184,11 +187,14 @@ class Screen {
         return;
     }
 
-    /** Draws a filled circle of radius r<=181 around (x,y), using the current color. */
+    /** Draws a filled circle of radius r around (x,y), using the current color. */
     function void drawCircle(int x, int y, int r) {
         var int dy;
-        if (r > 181) {
-            return; // radius too big
+        if ((x < 0) | (x > 511) | (y < 0) | (y > 255)) {
+            do Sys.error(12);
+        }
+        if (((x - r) < 0) | ((x + r) > 511) | ((y - r) < 0) | ((y + r) > 255)) {
+            do Sys.error(13);
         }
         let dy = -r;
         while (~(dy > r)) {

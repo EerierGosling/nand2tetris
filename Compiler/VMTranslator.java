@@ -25,6 +25,12 @@ public class VMTranslator { // todo: doesn't work if comment has no content
             output = Bootstrapping.returnRoutine + "\n";
         }
 
+        return output + translateBody(input);
+    }
+
+    public static String translateBody(String input) throws Exception { // translates a single file's lines with no bootstrap/return routine prefix - used to combine multiple files under one shared bootstrap
+        String output = "";
+
         String[] inputLines = input.split("\n");
 
         for (String line : inputLines) {
@@ -124,7 +130,7 @@ class ArithmeticLine extends Line {
         {
             put(
                 "add",
-                "@SP\nAM=M-1\nD=M\nA=A-1\nM=M+D");
+                "@SP\nAM=M-1\nD=M\nA=A-1\nM=D+M");
             put(
                 "sub",
                 "@SP\nAM=M-1\nD=M\nA=A-1\nM=M-D");
@@ -142,10 +148,10 @@ class ArithmeticLine extends Line {
                 "@SP\nAM=M-1\nD=M\nA=A-1\nD=M-D\n@JUMPTEMP1\nD;JLT\n@SP\nA=M-1\nM=0\n@JUMPTEMP2\n0;JMP\n(JUMPTEMP1)\n@SP\nA=M-1\nM=-1\n(JUMPTEMP2)");
             put(
                 "and",
-                "@SP\nAM=M-1\nD=M\nA=A-1\nM=M&D");
+                "@SP\nAM=M-1\nD=M\nA=A-1\nM=D&M");
             put(
                 "or",
-                "@SP\nAM=M-1\nD=M\nA=A-1\nM=M|D");
+                "@SP\nAM=M-1\nD=M\nA=A-1\nM=D|M");
             put(
                 "not",
                 "@SP\nA=M-1\nM=!M");

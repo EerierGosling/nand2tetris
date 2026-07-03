@@ -53,6 +53,10 @@ class Math {
     function int divide(int x, int y) {
         var int xAbs, yAbs, sign;
 
+        if (y = 0) {
+            do Sys.error(3);
+        }
+
         if (x=0) {
             return 0;
         }
@@ -86,6 +90,9 @@ class Math {
     /** Returns the integer part of the square root of x. */
     function int sqrt(int x) {
         var int y, j, cond;
+        if (x < 0) {
+            do Sys.error(4);
+        }
         let y = 0;
         let j = n/2 - 1;
         while (j > -1) {

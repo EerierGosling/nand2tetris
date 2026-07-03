@@ -24,7 +24,7 @@ public class Assembler { // todo: make it work if you flip the order of A and M
         String[] inputLines = input.split("\n"); // splits the input string into lines
 
         for (String line : inputLines) {
-            Instruction nextInstruction = Parser.parseLine(line); // gets the next parsed line as an Instruction object - could be A, C, or Label
+            Instruction nextInstruction = AsmParser.parseLine(line); // gets the next parsed line as an Instruction object - could be A, C, or Label
 
             if (nextInstruction == null) { // if the line was empty or a comment
                 continue;
@@ -66,7 +66,7 @@ public class Assembler { // todo: make it work if you flip the order of A and M
     }
 }
 
-class Parser {
+class AsmParser {
 
     public static Instruction parseLine(String newLine) throws Exception {
         // turn the String line into an Instruction object (A_Instruction, C_Instruction, or Label)
