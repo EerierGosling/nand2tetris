@@ -1,0 +1,26 @@
+{
+  "name": "jackc",
+  "version": "0.1.0",
+  "description": "Jack-to-binary compiler for the nand2tetris Hack platform - compiles .jack, .vm, and .asm down to runnable .hack binaries, OS included",
+  "keywords": ["nand2tetris", "jack", "hack", "compiler", "assembler", "vm"],
+  "author": "Sofia Egan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EerierGosling/nand2tetris.git"
+  },
+  "bin": {
+    "jackc": "bin/run.js"
+  },
+  "files": [
+    "bin/run.js",
+    "postinstall.js",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "node postinstall.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

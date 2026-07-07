@@ -1,0 +1,57 @@
+name: release
+
+# builds a native jackc binary for each platform and attaches them all to the
+# GitHub Release for the pushed tag - npm's postinstall downloads from there
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write # create the release + upload assets
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14 # apple silicon
+            asset: jackc-darwin-arm64
+            binary: jackc
+          - os: macos-13 # intel
+            asset: jackc-darwin-x64
+            binary: jackc
+          - os: ubuntu-latest
+            asset: jackc-linux-x64
+            binary: jackc
+          - os: windows-latest
+            asset: jackc-win32-x64.exe
+            binary: jackc.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      # windows checks symlinks out as plain text files unless told otherwise -
+      # the OS/*.vm links would get baked into the binary as garbage (build.sh
+      # also guards against this and fails loudly)
+      - name: enable symlinks on windows
+        if: runner.os == 'Windows'
+        run: git config --global core.symlinks true
+
+      - uses: actions/checkout@v4
+
+      - uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: "25"
+          distribution: "graalvm"
+
+      - name: build native binary
+        shell: bash
+        run: bash Compiler/build.sh
+
+      - name: rename to platform asset name
+        shell: bash
+        run: mv "Compiler/${{ matrix.binary }}" "${{ matrix.asset }}"
+
+      - name: attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.asset }}
