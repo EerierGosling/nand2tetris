@@ -1,7 +1,10 @@
-// downloads the prebuilt jackc binary for this platform from GitHub Releases.
+// downloads the prebuilt jackc binary for this platform from GitHub Releases,
+// plus the nand2tetris emulator tools (jars - run with system java via
+// `jackc vm-emulator` / `jackc cpu-emulator`).
 // runs once at `npm install` time - the package itself ships no binaries.
 const fs = require("fs");
 const path = require("path");
+const { spawnSync } = require("child_process");
 
 const { version, repository } = require("./package.json");
 const repo = repository.url.match(/github\.com\/(.+?)(\.git)?$/)[1];
@@ -22,20 +25,39 @@ if (!asset) {
   process.exit(1);
 }
 
-const url = `https://github.com/${repo}/releases/download/v${version}/${asset}`;
-const dest = path.join(__dirname, "bin", asset.endsWith(".exe") ? "jackc-native.exe" : "jackc-native");
+const binaryUrl = `https://github.com/${repo}/releases/download/v${version}/${asset}`;
+const binaryDest = path.join(__dirname, "bin", asset.endsWith(".exe") ? "jackc-native.exe" : "jackc-native");
 
-async function main() {
+const toolsUrl = `https://raw.githubusercontent.com/${repo}/main/Compiler/npm-assets/nand2tetris-tools.tar.gz`;
+const toolsDir = path.join(__dirname, "tools");
+
+async function download(url, dest) {
   console.log(`jackc: downloading ${url}`);
   const res = await fetch(url); // follows GitHub's redirect to the actual asset host
   if (!res.ok) {
     throw new Error(`download failed: ${res.status} ${res.statusText}`);
   }
-
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.writeFileSync(dest, Buffer.from(await res.arrayBuffer()));
-  fs.chmodSync(dest, 0o755);
-  console.log(`jackc: installed binary at ${dest}`);
+}
+
+async function main() {
+  await download(binaryUrl, binaryDest);
+  fs.chmodSync(binaryDest, 0o755);
+  console.log(`jackc: installed binary at ${binaryDest}`);
+
+  // emulator tools are optional - a failure here shouldn't break the compiler install
+  try {
+    const tarball = path.join(__dirname, "tools.tar.gz");
+    await download(toolsUrl, tarball);
+    fs.mkdirSync(toolsDir, { recursive: true });
+    const tar = spawnSync("tar", ["-xzf", tarball, "-C", toolsDir], { stdio: "inherit" });
+    if (tar.status !== 0) throw new Error("tar extraction failed");
+    fs.unlinkSync(tarball);
+    console.log(`jackc: installed emulator tools at ${toolsDir}`);
+  } catch (err) {
+    console.warn(`jackc: emulator tools unavailable (${err.message}) - compiling still works, but 'jackc vm-emulator'/'jackc cpu-emulator' won't`);
+  }
 }
 
 main().catch((err) => {

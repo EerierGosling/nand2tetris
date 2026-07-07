@@ -5,6 +5,7 @@ name: release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch: # manual runs from the Actions tab (builds but only tag runs attach to a release)
 
 permissions:
   contents: write # create the release + upload assets
