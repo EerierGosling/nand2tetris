@@ -53,9 +53,12 @@ if you want to compile a script and run it, you have two choices:
 
 the vm emulator will allow you to run much larger scripts than the cpu emulator, which has a much smaller memory limit (the OS takes up a significant amount of the available memory).
 
-you can use the snake script that i wrote in jack [here]() as a test!
+you can use the snake script that i wrote in jack [here](https://github.com/EerierGosling/nand2tetris/tree/main/9/Snake) as a test! it's too big to compile to binary - it'll only run in the vm emulator.
 
 
 ## how it's built
 
-the package has a lot of different parts. 
+the package has a lot of different parts.
+- the compiler is written in java and is [here](https://github.com/EerierGosling/nand2tetris/tree/main/Compiler)
+- the OS was written in jack (compiled to vm) and can be found [here](https://github.com/EerierGosling/nand2tetris/tree/main/12)
+- the test snake script was written in jack and can be found [here](https://github.com/EerierGosling/nand2tetris/tree/main/9/Snake)
