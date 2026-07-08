@@ -38,10 +38,10 @@ with no .tst file they open interactively; with one they run it in batch mode
 
 #### file extensions
 
-jack -> .jack
-vm code -> .vm
-assembly -> .asm
-binary -> .hack
+- jack -> .jack
+- vm code -> .vm
+- assembly -> .asm
+- binary -> .hack
 
 
 ## usage
