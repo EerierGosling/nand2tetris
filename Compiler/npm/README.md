@@ -42,3 +42,13 @@ jack -> .jack
 vm code -> .vm
 assembly -> .asm
 binary -> .hack
+
+
+## usage
+
+if you want to compile a script and run it, you have two choices:
+
+- compile to binary (.hack) and run in the cpu emulator (works for jack, vm, and assembly code)
+- compile to vm and run in the vm emulator (work for jack code)
+
+the vm emulator will allow you to run much larger scripts than the cpu emulator, which has a much smaller memory limit (the OS takes up a significant amount of the available memory).
