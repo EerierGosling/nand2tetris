@@ -139,6 +139,12 @@ public class Compiler {
         System.out.println("  -h, --help        show this message");
         System.out.println();
         System.out.println("if <file-or-folder> is a folder, all matching files in it and its subfolders are compiled");
+        System.out.println();
+        System.out.println("emulators (official nand2tetris tools - need java installed):");
+        System.out.println("  jackc vm-emulator [file.tst]         run VM programs (built-in OS, no 32K limit)");
+        System.out.println("  jackc cpu-emulator [file.tst]        run compiled .hack binaries");
+        System.out.println("  jackc hardware-simulator [file.tst]  simulate .hdl chip designs");
+        System.out.println("with no .tst file they open interactively; with one they run it in batch mode");
     }
 
     public static void runInteractive() throws Exception { // i've only tested this on jack to vm! it theoretically works on everything else, but it does what it's supposed to for this lab

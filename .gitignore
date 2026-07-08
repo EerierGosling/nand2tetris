@@ -7,3 +7,5 @@ Compiler/jackc.exe
 Compiler/npm/bin/jackc-native
 Compiler/npm/bin/jackc-native.exe
 Compiler/npm/node_modules/
+Compiler/npm/tools/
+Compiler/npm/tools.tar.gz

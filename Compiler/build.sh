@@ -21,7 +21,11 @@ grep -q "function Sys.init" build/OS/Sys.vm || {
     exit 1
 }
 
+# on windows the launcher is native-image.cmd, which bash won't find under the bare name
+NATIVE_IMAGE="native-image"
+command -v native-image >/dev/null 2>&1 || NATIVE_IMAGE="native-image.cmd"
+
 # --no-fallback = fail the build instead of silently producing a binary that still needs a JVM
-native-image -cp build Compiler -o jackc --no-fallback
+"$NATIVE_IMAGE" -cp build Compiler -o jackc --no-fallback
 
 echo "built: $(pwd)/jackc"

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // thin shim: npm puts this on PATH as `jackc`.
-// - `jackc vm-emulator [file.tst]` / `jackc cpu-emulator [file.tst]` launch the
-//   official nand2tetris emulators (need java on the system)
+// - `jackc vm-emulator` / `jackc cpu-emulator` / `jackc hardware-simulator`
+//   (each takes an optional .tst file) launch the official nand2tetris tools
+//   (need java on the system)
 // - everything else goes straight to the native compiler binary
 const { spawnSync } = require("child_process");
 const path = require("path");
@@ -12,6 +13,7 @@ const args = process.argv.slice(2);
 const emulators = {
   "vm-emulator": "VMEmulatorMain",
   "cpu-emulator": "CPUEmulatorMain",
+  "hardware-simulator": "HardwareSimulatorMain",
 };
 
 if (emulators[args[0]]) {
