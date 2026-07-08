@@ -29,3 +29,9 @@ jackc [-i <asm|vm|jack>] [-o <hack|asm|vm>] <file-or-folder>
   -h, --help        show this message
 
 if <file-or-folder> is a folder, all matching files in it and its subfolders are compiled
+
+emulators (official nand2tetris tools - need java installed):
+  jackc vm-emulator [file.tst]         run VM programs (built-in OS, no 32K limit)
+  jackc cpu-emulator [file.tst]        run compiled .hack binaries
+  jackc hardware-simulator [file.tst]  simulate .hdl chip designs
+with no .tst file they open interactively; with one they run it in batch mode
