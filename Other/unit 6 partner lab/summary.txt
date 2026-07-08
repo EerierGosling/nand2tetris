@@ -1,7 +1,0 @@
-bananas - #$@!6 - 1 time
-dumb - #$@!4 - 1 time
-ugly - #$@!1 - 8 times
-gross - #$@!5 - 1 time
-mistake - #$@!3 - 1 time
-mistakes - #$@!7 - 1 time
-fuzzy - #$@!2 - 3 times
