@@ -35,3 +35,10 @@ emulators (official nand2tetris tools - need java installed):
   jackc cpu-emulator [file.tst]        run compiled .hack binaries
   jackc hardware-simulator [file.tst]  simulate .hdl chip designs
 with no .tst file they open interactively; with one they run it in batch mode
+
+file extensions:
+
+jack -> .jack
+vm code -> .vm
+assembly -> .asm
+binary -> .hack
