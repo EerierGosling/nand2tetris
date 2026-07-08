@@ -20,9 +20,8 @@ the nand2tetris software suite contains many emylators to test scripts/chips, an
 
 ## commands
 
-how to use jackc:
-
-jackc [-i <asm|vm|jack>] [-o <hack|asm|vm>] <file-or-folder>
+```
+usage: jackc [-i <asm|vm|jack>] [-o <hack|asm|vm>] <file-or-folder>
 
   -i, --in <type>   input file type (inferred from extension if omitted)
   -o, --out <type>  output file type (default: hack)
@@ -35,6 +34,7 @@ emulators (official nand2tetris tools - need java installed):
   jackc cpu-emulator [file.tst]        run compiled .hack binaries
   jackc hardware-simulator [file.tst]  simulate .hdl chip designs
 with no .tst file they open interactively; with one they run it in batch mode
+```
 
 #### file extensions
 
