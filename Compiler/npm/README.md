@@ -36,7 +36,7 @@ emulators (official nand2tetris tools - need java installed):
   jackc hardware-simulator [file.tst]  simulate .hdl chip designs
 with no .tst file they open interactively; with one they run it in batch mode
 
-file extensions:
+#### file extensions
 
 jack -> .jack
 vm code -> .vm
@@ -52,3 +52,10 @@ if you want to compile a script and run it, you have two choices:
 - compile to vm and run in the vm emulator (work for jack code)
 
 the vm emulator will allow you to run much larger scripts than the cpu emulator, which has a much smaller memory limit (the OS takes up a significant amount of the available memory).
+
+you can use the snake script that i wrote in jack [here]() as a test!
+
+
+## how it's built
+
+the package has a lot of different parts. 
