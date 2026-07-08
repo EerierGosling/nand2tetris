@@ -11,6 +11,9 @@ for the nand2tetris hack computer.
 
 compiler is written in java, and test GUI is from the [nand2tetris software suite](https://www.nand2tetris.org/software) (not built by me!).
 
+## background
+
+jack is a language very similar to java but much easier to compile, designed for the [nand2tetris course](https://www.nand2tetris.org)!
 
 how to use jackc:
 
