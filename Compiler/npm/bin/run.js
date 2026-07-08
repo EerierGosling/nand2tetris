@@ -28,7 +28,7 @@ function runCompiler(args) {
 
   if (!fs.existsSync(binary)) {
     console.error("jackc: native binary not found - the install step may have been skipped.");
-    console.error("try reinstalling without --ignore-scripts: npm install -g jackc");
+    console.error("try reinstalling without --ignore-scripts: npm install -g jack-compiler");
     process.exit(1);
   }
 
@@ -39,7 +39,7 @@ function runCompiler(args) {
 function runEmulator(mainClass, args) {
   const toolsDir = path.join(__dirname, "..", "tools");
   if (!fs.existsSync(path.join(toolsDir, "bin", "classes"))) {
-    console.error("jackc: emulator tools not found - try reinstalling: npm install -g jackc");
+    console.error("jackc: emulator tools not found - try reinstalling: npm install -g jack-compiler");
     process.exit(1);
   }
 

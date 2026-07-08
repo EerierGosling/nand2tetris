@@ -1,5 +1,5 @@
 {
-  "name": "jackc",
+  "name": "jack-compiler",
   "version": "0.1.0",
   "description": "Jack-to-binary compiler for the nand2tetris Hack platform - compiles .jack, .vm, and .asm down to runnable .hack binaries, OS included",
   "keywords": ["nand2tetris", "jack", "hack", "compiler", "assembler", "vm"],
