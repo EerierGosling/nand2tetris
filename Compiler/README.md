@@ -11,6 +11,13 @@ for the nand2tetris hack computer.
 
 compiler is written in java, and test GUI is from the [nand2tetris software suite](https://www.nand2tetris.org/software) (not built by me!).
 
+
+## installation
+
+you can find the package on npm [here](https://www.npmjs.com/package/jack-compiler)!
+
+if you have npm on your computer, just run `npm install -g jack-compiler` to install it. to use the emulators, you must have a java runtime installed!
+
 ## background
 
 jack is a language very similar to java but much easier to compile, designed for the [nand2tetris course](https://www.nand2tetris.org)! it runs on the hack computer (also from the course).
