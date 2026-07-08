@@ -13,7 +13,12 @@ compiler is written in java, and test GUI is from the [nand2tetris software suit
 
 ## background
 
-jack is a language very similar to java but much easier to compile, designed for the [nand2tetris course](https://www.nand2tetris.org)!
+jack is a language very similar to java but much easier to compile, designed for the [nand2tetris course](https://www.nand2tetris.org)! it runs on the hack computer (also from the course).
+
+the nand2tetris software suite contains many emylators to test scripts/chips, and two are bundled into this package! those are the vm emulator, cpu emulator, and hardware simulator (not useful for right now - but i may add features in the future that need it!).
+
+
+## commands
 
 how to use jackc:
 
